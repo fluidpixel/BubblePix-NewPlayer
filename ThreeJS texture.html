@@ -47,13 +47,13 @@
         var scene = new THREE.Scene();
  
         // material
-        var material = new THREE.MeshLambertMaterial({
+        var stillMaterial = new THREE.MeshLambertMaterial({
             map: THREE.ImageUtils.loadTexture("images/receipts196.jpg")
         });
          
         // sphere
         //( radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength )
-        var sphere = new THREE.Mesh(new THREE.SphereGeometry(200, 64, 32, 0, Math.PI * 2, Math.PI / 3, Math.PI / 3), material); //radius, segments, rings, phiStart, phiLength, thetaStart, thetaLength
+        var sphere = new THREE.Mesh(new THREE.SphereGeometry(200, 64, 32, 0, Math.PI * 2, Math.PI / 3, Math.PI / 3), stillMaterial); //radius, segments, rings, phiStart, phiLength, thetaStart, thetaLength
         sphere.overdraw = true;
         scene.add(sphere);
         
