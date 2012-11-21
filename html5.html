@@ -8,7 +8,7 @@
 </script>
 
 <video id="video" autoplay style="display:none">
-	<source src="IOS_3d8364f72001028bc862bdf761b5e2c2.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+	<!--<source src="IOS_3d8364f72001028bc862bdf761b5e2c2.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>-->
 </video>
 		
 <script>
@@ -40,8 +40,7 @@
 
 		if ( video.readyState === video.HAVE_ENOUGH_DATA ) {
 			imageContext.drawImage( video, 0, 0 );
-			if ( videoTexture ) videoTexture.needsUpdate = true;
-			console.log("update");
+			if ( texture ) texture.needsUpdate = true;
 		}
 				
         // request new frame
@@ -53,16 +52,15 @@
     window.onload = function(){
         var angularSpeed = 0.05; // revolutions per second
         var lastTime = 0;
- 		videoElement = document.getElementById("video");
-		
-
+        
         // renderer
-        var renderer = new THREE.WebGLRenderer();
+        //var renderer = new THREE.WebGLRenderer();
+      	var	renderer = new THREE.CanvasRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
  
         // camera
-        var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 220); //fov, aspect, near, far
+        var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 220); //fov (60), aspect, near, far
         camera.position.z = 0;
  
         // scene
@@ -73,25 +71,26 @@
             map: THREE.ImageUtils.loadTexture("receipts196.jpg")
         });
        
-        var videoTexture = new THREE.Texture( videoElement );
-        //videoMaterial.minFilter = THREE.LinearFilter;
-		//videoMaterial.magFilter = THREE.LinearFilter;
-		//videoMaterial.format = THREE.RGBFormat;
-		//videoMaterial.generateMipmaps = false;
 		
-		
-		//var parameters = { color: 0xffffff, map: videoMaterial },
-		//			material_base = new THREE.MeshLambertMaterial( parameters );
+		video = document.getElementById( 'video' );
 
-		var videoMaterial    = new THREE.MeshLambertMaterial({
-			map : videoTexture
-		});
+		image = document.createElement( 'canvas' );
+		image.width = 640;
+		image.height = 480;
 
-       	//renderer.initMaterial( material_base, scene.__lights, scene.fog );
-       	
+		imageContext = image.getContext( '2d' );
+		imageContext.fillStyle = '#000000';
+		imageContext.fillRect( 0, 0, 640, 480 );
+
+		texture = new THREE.Texture( image );
+		texture.minFilter = THREE.LinearFilter;
+		texture.magFilter = THREE.LinearFilter;
+
+		var material = new THREE.MeshBasicMaterial( { map: texture, overdraw: true } );
+				
         // sphere
         //( radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength )
-        var sphere = new THREE.Mesh(new THREE.SphereGeometry(200, 64, 32, 0, Math.PI * 2, Math.PI / 3, Math.PI / 3), videoMaterial); //radius, segments, rings, phiStart, phiLength, thetaStart, thetaLength
+        var sphere = new THREE.Mesh(new THREE.SphereGeometry(200, 64, 32, 0, Math.PI * 2, Math.PI / 3, Math.PI / 3), stillMaterial); //radius, segments, rings, phiStart, phiLength, thetaStart, thetaLength
         sphere.overdraw = true;
         scene.add(sphere);
         
