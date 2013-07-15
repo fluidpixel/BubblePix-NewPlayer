@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+</head>
+<body>
+<script src="Three.js">
+</script>
+
+<!--
+<video id="video" autoplay style="display:none">
+	<source src="IOS_5e25d2d9a96955cbaf50b4055ddcd95d.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+</video>
+-->
+	
+<script>
+
+	var videoTexture;
+	
+    window.requestAnimFrame = (function(callback){
+        return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback){
+            window.setTimeout(callback, 1000 / 60); //60fps
+        };
+    })();
+ 
+    function animate(lastTime, angularSpeed, three){
+        // update
+        var date = new Date();
+        var time = date.getTime();
+        var timeDiff = time - lastTime;
+        var angleChange = angularSpeed * timeDiff * 2 * Math.PI / 1000;
+        three.sphere.rotation.y += angleChange;
+        lastTime = time;
+ 
+        // render<script src="Three.js">
+
+    window.requestAnimFrame = (function(callback){
+        return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback){
+            window.setTimeout(callback, 1000 / 60); //60fps
+        };
+    })();
+ 
+    function animate(lastTime, angularSpeed, three){
+        // update
+        var date = new Date();
+        var time = date.getTime();
+        var timeDiff = time - lastTime;
+        var angleChange = angularSpeed * timeDiff * 2 * Math.PI / 1000;
+        three.sphere.rotation.y += angleChange;
+        lastTime = time;
+ 
+        // render
+        three.renderer.render(three.scene, three.camera);
+ 
+        // request new frame
+        requestAnimFrame(function(){
+            animate(lastTime, angularSpeed, three);
+        });
+    }
+ 
+    window.onload = function(){
+        var angularSpeed = 0.05; // revolutions per second
+        var lastTime = 0;
+ 
+        // renderer
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+ 
+        // camera
+        var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 220); //fov, aspect, near, far
+        camera.position.z = 0;
+ 
+        // scene
+        var scene = new THREE.Scene();
+ 
+        // material
+        var stillMaterial = new THREE.MeshLambertMaterial({
+            map: THREE.ImageUtils.loadTexture("images/receipts196.jpg")
+        });
+         
+        // sphere
+        //( radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength )
+        var sphere = new THREE.Mesh(new THREE.SphereGeometry(200, 64, 32, 0, Math.PI * 2, Math.PI / 3, Math.PI / 3), stillMaterial); //radius, segments, rings, phiStart, phiLength, thetaStart, thetaLength
+        sphere.overdraw = true;
+        scene.add(sphere);
+        
+ 	
+        // add subtle ambient lighting
+        var ambientLight = new THREE.AmbientLight(0xffffff);
+        scene.add(ambientLight);
+ 
+        // add directional light source
+        //var directionalLight = new THREE.DirectionalLight(0xffffff);
+        //directionalLight.position.set(1, 1, 1).normalize();
+        //scene.add(directionalLight);
+ 
+        // create wrapper object that contains three.js objects
+        var three = {
+            renderer: renderer,
+            camera: camera,
+            scene: scene,
+            sphere: sphere
+        };
+ 
+        /*
+         * wait for texture image to load before
+         * starting the animation
+         */ 
+        var textureImg = new Image();
+        textureImg.onload = function(){
+            animate(lastTime, angularSpeed, three, this);
+        };
+        textureImg.src = "images/receipts196.jpg";
+    };
+</script>
+</body>
+</html>

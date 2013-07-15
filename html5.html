@@ -7,13 +7,15 @@
 <script src="Three.js">
 </script>
 
+<!--
 <video id="video" autoplay style="display:none">
-	<!--<source src="IOS_3d8364f72001028bc862bdf761b5e2c2.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>-->
+	<source src="IOS_3d8364f72001028bc862bdf761b5e2c2.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
 </video>
+-->
 		
 <script>
 
-	var videoTexture;
+	//var videoTexture;
 	
     window.requestAnimFrame = (function(callback){
         return window.requestAnimationFrame ||
@@ -38,12 +40,6 @@
         // render
         three.renderer.render(three.scene, three.camera);
 
-		if ( video.readyState === video.HAVE_ENOUGH_DATA ) {
-			imageContext.drawImage( video, 0, 0 );
-			if ( texture ) texture.needsUpdate = true;
-		}
-				
-        // request new frame
         requestAnimFrame(function(){
             animate(lastTime, angularSpeed, three);
         });
@@ -55,12 +51,13 @@
         
         // renderer
         var renderer = new THREE.WebGLRenderer();
+
       	//var	renderer = new THREE.CanvasRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
  
         // camera
-        var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 220); //fov (60), aspect, near, far
+        var camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 1, 220); //fov (60), aspect, near, far
         camera.position.z = 0;
  
         // scene
@@ -72,15 +69,15 @@
         });
        
 		
-		video = document.getElementById( 'video' );
+		//video = document.getElementById( 'video' );
 
 		image = document.createElement( 'canvas' );
-		image.width = 640;
-		image.height = 480;
+		image.width = 512;
+		image.height = 512;
 
 		imageContext = image.getContext( '2d' );
 		imageContext.fillStyle = '#000000';
-		imageContext.fillRect( 0, 0, 640, 480 );
+		imageContext.fillRect( 0, 0, 512, 512 );
 
 		texture = new THREE.Texture( image );
 		texture.minFilter = THREE.LinearFilter;
@@ -111,7 +108,7 @@
             scene: scene,
             sphere: sphere
         };
- 
+        
         /*
          * wait for texture image to load before
          * starting the animation
