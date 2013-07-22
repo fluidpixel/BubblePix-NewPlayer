@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<my_params>
+  <stage>
+    <panorama_controller xml_path="https://bubblepix.com/stillInterface.xml" posx="-80" posy=""/>
+    <video_controller xml_path="https://bubblepix.com/videoInterface.xml" posx="10" posy="10"/>
+    <sandglass path="https://s3-eu-west-1.amazonaws.com/files.bubblepix.com/site/sys_img/my_sandglass.png"/>
+    <cursor path="https://s3-eu-west-1.amazonaws.com/files.bubblepix.com/site/sys_img/my_cursor.png"/>
+    <captions fov_max=" " fov_min=" " video_preloading="Drag to Spin"/>
+    <controller_font size_prog_ind="12" size_pos_ind="12"/>
+  </stage>
+  <context_menu>
+    <about_me my_name="BubblePix Ltd" my_link="https://www.bubblepix.com"/>
+  </context_menu>
+  <user_panel>
+    <logo path="https://s3-eu-west-1.amazonaws.com/files.bubblepix.com/site/sys_img/bubblepixlogo.png" posx="10" posy="10"/>
+  </user_panel>
+  <play_objects>
+    <crop width="0.5739152" height="0.7683824" cx="0.5176057" cy="0.5015625" inner_circle="0.4800638"/>
+    <behavior pause_on_start="yes" start_button="yes"/>
+    <projection proj_type="1" elevation="40" depression="35" implicit="yes"/>
+    <view flip_verical="no" flip_horizontal="yes" init_fov="120" lock_fov="yes" init_yaw="-90" init_pitch="0" lock_nadirs="no" lock_vertical="yes" init_filter="yes" disable_wheel="yes"/>
+    <image cross_domain="yes" video_repeat="no"/>
+    <caps path_zenith="https://bubblepix.com/sys_img/cap_zenith.png" path_nadir="https://bubblepix.com/sys_img/cap_ndr.png"/>
+  </play_objects>
+</my_params>
