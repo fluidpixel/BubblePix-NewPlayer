@@ -3292,6 +3292,195 @@ THREE.Math = {
 		};
 	}()
 };
+
+
+THREE.Triangle = function ( a, b, c ) {
+
+	this.a = ( a !== undefined ) ? a : new THREE.Vector3();
+	this.b = ( b !== undefined ) ? b : new THREE.Vector3();
+	this.c = ( c !== undefined ) ? c : new THREE.Vector3();
+
+};
+
+THREE.Triangle.normal = function() {
+
+	var v0 = new THREE.Vector3();
+
+	return function ( a, b, c, optionalTarget ) {
+
+		var result = optionalTarget || new THREE.Vector3();
+
+		result.subVectors( c, b );
+		v0.subVectors( a, b );
+		result.cross( v0 );
+
+		var resultLengthSq = result.lengthSq();
+		if( resultLengthSq > 0 ) {
+
+			return result.multiplyScalar( 1 / Math.sqrt( resultLengthSq ) );
+
+		}
+
+		return result.set( 0, 0, 0 );
+
+	};
+
+}();
+
+// static/instance method to calculate barycoordinates
+// based on: http://www.blackpawn.com/texts/pointinpoly/default.html
+THREE.Triangle.barycoordFromPoint = function() {
+
+	var v0 = new THREE.Vector3();
+	var v1 = new THREE.Vector3();
+	var v2 = new THREE.Vector3();
+
+	return function ( point, a, b, c, optionalTarget ) {
+
+		v0.subVectors( c, a );
+		v1.subVectors( b, a );
+		v2.subVectors( point, a );
+
+		var dot00 = v0.dot( v0 );
+		var dot01 = v0.dot( v1 );
+		var dot02 = v0.dot( v2 );
+		var dot11 = v1.dot( v1 );
+		var dot12 = v1.dot( v2 );
+
+		var denom = ( dot00 * dot11 - dot01 * dot01 );
+
+		var result = optionalTarget || new THREE.Vector3();
+
+		// colinear or singular triangle
+		if( denom == 0 ) {
+			// arbitrary location outside of triangle?
+			// not sure if this is the best idea, maybe should be returning undefined
+			return result.set( -2, -1, -1 );
+		}
+
+		var invDenom = 1 / denom;
+		var u = ( dot11 * dot02 - dot01 * dot12 ) * invDenom;
+		var v = ( dot00 * dot12 - dot01 * dot02 ) * invDenom;
+
+		// barycoordinates must always sum to 1
+		return result.set( 1 - u - v, v, u );
+
+	};
+
+}();
+
+THREE.Triangle.containsPoint = function() {
+
+	var v1 = new THREE.Vector3();
+
+	return function ( point, a, b, c ) {
+
+		var result = THREE.Triangle.barycoordFromPoint( point, a, b, c, v1 );
+
+		return ( result.x >= 0 ) && ( result.y >= 0 ) && ( ( result.x + result.y ) <= 1 );
+
+	};
+
+}();
+
+THREE.Triangle.prototype = {
+
+	constructor: THREE.Triangle,
+
+	set: function ( a, b, c ) {
+
+		this.a.copy( a );
+		this.b.copy( b );
+		this.c.copy( c );
+
+		return this;
+
+	},
+
+	setFromPointsAndIndices: function ( points, i0, i1, i2 ) {
+
+		this.a.copy( points[i0] );
+		this.b.copy( points[i1] );
+		this.c.copy( points[i2] );
+
+		return this;
+
+	},
+
+	copy: function ( triangle ) {
+
+		this.a.copy( triangle.a );
+		this.b.copy( triangle.b );
+		this.c.copy( triangle.c );
+
+		return this;
+
+	},
+
+	area: function() {
+
+		var v0 = new THREE.Vector3();
+		var v1 = new THREE.Vector3();
+
+		return function () {
+
+			v0.subVectors( this.c, this.b );
+			v1.subVectors( this.a, this.b );
+
+			return v0.cross( v1 ).length() * 0.5;
+
+		};
+
+	}(),
+
+	midpoint: function ( optionalTarget ) {
+
+		var result = optionalTarget || new THREE.Vector3();
+		return result.addVectors( this.a, this.b ).add( this.c ).multiplyScalar( 1 / 3 );
+
+	},
+
+	normal: function ( optionalTarget ) {
+
+		return THREE.Triangle.normal( this.a, this.b, this.c, optionalTarget );
+
+	},
+
+	plane: function ( optionalTarget ) {
+
+		var result = optionalTarget || new THREE.Plane();
+
+		return result.setFromCoplanarPoints( this.a, this.b, this.c );
+
+	},
+
+	barycoordFromPoint: function ( point, optionalTarget ) {
+
+		return THREE.Triangle.barycoordFromPoint( point, this.a, this.b, this.c, optionalTarget );
+
+	},
+
+	containsPoint: function ( point ) {
+
+		return THREE.Triangle.containsPoint( point, this.a, this.b, this.c );
+
+	},
+
+	equals: function ( triangle ) {
+
+		return triangle.a.equals( this.a ) && triangle.b.equals( this.b ) && triangle.c.equals( this.c );
+
+	},
+
+	clone: function () {
+
+		return new THREE.Triangle().copy( this );
+
+	}
+
+};
+
+
 THREE.UV = function ( u, v ) {
 	return new THREE.Vector2( u, v );
 };
@@ -3361,23 +3550,7 @@ THREE.EventDispatcher.prototype = {
 		return a.distance - b.distance;
 	};
 	var intersectObject = function ( object, raycaster, intersects ) {
-		if ( object instanceof THREE.Particle ) {
-			matrixPosition.getPositionFromMatrix( object.matrixWorld );
-			var distance = raycaster.ray.distanceToPoint( matrixPosition );
-			if ( distance > object.scale.x ) {
-				return intersects;
-			}
-			intersects.push( {
-				distance: distance,
-				point: object.position,
-				face: null,
-				object: object
-			} );
-		} else if ( object instanceof THREE.LOD ) {
-			matrixPosition.getPositionFromMatrix( object.matrixWorld );
-			var distance = raycaster.ray.origin.distanceTo( matrixPosition );
-			intersectObject( object.getObjectForDistance( distance ), raycaster, intersects );
-		} else if ( object instanceof THREE.Mesh ) {
+		if ( object instanceof THREE.Mesh ) {
 			var geometry = object.geometry;
 						matrixPosition.getPositionFromMatrix( object.matrixWorld );
 			if ( geometry.boundingSphere === null ) geometry.computeBoundingSphere();
@@ -3520,41 +3693,7 @@ THREE.EventDispatcher.prototype = {
 					} );
 				}
 			}
-		} else if ( object instanceof THREE.Line ) {
-			var precision = raycaster.linePrecision;
-			var precisionSq = precision * precision;
-			var geometry = object.geometry;
-			if ( geometry.boundingSphere === null ) geometry.computeBoundingSphere();
-						matrixPosition.getPositionFromMatrix(object.matrixWorld);
-			sphere.set( matrixPosition, geometry.boundingSphere.radius * object.matrixWorld.getMaxScaleOnAxis() );
-			
-			if ( raycaster.ray.isIntersectionSphere( sphere ) === false ) {
-				return intersects;
-			}
-			
-			inverseMatrix.getInverse( object.matrixWorld );
-			localRay.copy( raycaster.ray ).applyMatrix4( inverseMatrix );
-			localRay.direction.normalize(); 			var vertices = geometry.vertices;
-			var nbVertices = vertices.length;
-			var interSegment = new THREE.Vector3();
-			var interRay = new THREE.Vector3();
-			var step = object.type === THREE.LineStrip ? 1 : 2;
-			for ( var i = 0; i < nbVertices - 1; i = i + step ) {
-				var distSq = localRay.distanceSqToSegment( vertices[ i ], vertices[ i + 1 ], interRay, interSegment );
-				if ( distSq <= precisionSq ) {
-					var distance = localRay.origin.distanceTo( interRay );
-					if ( raycaster.near <= distance && distance <= raycaster.far ) {
-						intersects.push( {
-							distance: distance,
-																					point: interSegment.clone().applyMatrix4( object.matrixWorld ),
-							face: null,
-							faceIndex: null,
-							object: object
-						} );
-					}
-				}
-			}
-		}
+		} 
 	};
 	var intersectDescendants = function ( object, raycaster, intersects ) {
 		var descendants = object.getDescendants();
@@ -11792,6 +11931,78 @@ THREE.ImageUtils = {
 		return texture;
 	}
 };
+
+
+THREE.PlaneGeometry = function ( width, height, widthSegments, heightSegments ) {
+
+	THREE.Geometry.call( this );
+
+	this.width = width;
+	this.height = height;
+
+	this.widthSegments = widthSegments || 1;
+	this.heightSegments = heightSegments || 1;
+
+	var ix, iz;
+	var width_half = width / 2;
+	var height_half = height / 2;
+
+	var gridX = this.widthSegments;
+	var gridZ = this.heightSegments;
+
+	var gridX1 = gridX + 1;
+	var gridZ1 = gridZ + 1;
+
+	var segment_width = this.width / gridX;
+	var segment_height = this.height / gridZ;
+
+	var normal = new THREE.Vector3( 0, 0, 1 );
+
+	for ( iz = 0; iz < gridZ1; iz ++ ) {
+
+		for ( ix = 0; ix < gridX1; ix ++ ) {
+
+			var x = ix * segment_width - width_half;
+			var y = iz * segment_height - height_half;
+
+			this.vertices.push( new THREE.Vector3( x, - y, 0 ) );
+
+		}
+
+	}
+
+	for ( iz = 0; iz < gridZ; iz ++ ) {
+
+		for ( ix = 0; ix < gridX; ix ++ ) {
+
+			var a = ix + gridX1 * iz;
+			var b = ix + gridX1 * ( iz + 1 );
+			var c = ( ix + 1 ) + gridX1 * ( iz + 1 );
+			var d = ( ix + 1 ) + gridX1 * iz;
+
+			var face = new THREE.Face4( a, b, c, d );
+			face.normal.copy( normal );
+			face.vertexNormals.push( normal.clone(), normal.clone(), normal.clone(), normal.clone() );
+
+			this.faces.push( face );
+			this.faceVertexUvs[ 0 ].push( [
+				new THREE.Vector2( ix / gridX, 1 - iz / gridZ ),
+				new THREE.Vector2( ix / gridX, 1 - ( iz + 1 ) / gridZ ),
+				new THREE.Vector2( ( ix + 1 ) / gridX, 1 - ( iz + 1 ) / gridZ ),
+				new THREE.Vector2( ( ix + 1 ) / gridX, 1 - iz / gridZ )
+			] );
+
+		}
+
+	}
+
+	this.computeCentroids();
+
+};
+
+THREE.PlaneGeometry.prototype = Object.create( THREE.Geometry.prototype );
+
+
 THREE.SphereGeometry = function ( isRectangular, radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength ) {
 	THREE.Geometry.call( this );
 	this.radius = radius = radius || 50;
