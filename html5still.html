@@ -5,6 +5,8 @@
 </head>
 <body>
     <div id="container"></div>
+    <canvas id="canvas"></canvas>
+    
     <script src="html5still_files/three59.light.js"></script>
 
          <!-- <video id="video" autoplay style="display:none">
@@ -100,11 +102,12 @@
             renderer.setSize(610, 250);
             container.appendChild( renderer.domElement );
 
-            // camera
-            
+            //It's the better aspect for equirectangle image
+            var aspect = window.innerWidth / (window.innerHeight*3);
 
+            // camera
             if(isEquirectangle){
-                var camera = new THREE.PerspectiveCamera(130, window.innerWidth / (window.innerHeight*3), 1, 10000 );
+                var camera = new THREE.PerspectiveCamera(130, aspect, 1, 10000 );
                 camera.target = new THREE.Vector3( 0, 0, 0 );
                 camera.position.z = 0;
             }else{
@@ -112,7 +115,6 @@
                 camera.position.z = 0;
             }
             
-
             // scene
             var scene = new THREE.Scene();
 
@@ -139,22 +141,12 @@
             var display_bt = new THREE.Mesh( new THREE.PlaneGeometry(9,6), new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'html5still_files/object_images/display01.png' ), transparent: true } ) );
             var display_bt2 = new THREE.Mesh( new THREE.PlaneGeometry(10,6), new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'html5still_files/object_images/display02.png' ), transparent: true } ) );
 
-
-
             // material
             var stillMaterial = new THREE.MeshLambertMaterial({
                 map: THREE.ImageUtils.loadTexture("golf.jpg")
             }); 
 
             video = document.getElementById( 'video' );
-
-            image = document.createElement( 'canvas' );
-            image.width = 1024;
-            image.height = 512;
-
-            imageContext = image.getContext( '2d' );
-            imageContext.fillStyle = '#000000';
-            imageContext.fillRect( 0, 0, 512, 512 );
 
             texture = new THREE.Texture( video );
             texture.minFilter = THREE.LinearFilter;
@@ -246,28 +238,25 @@
 
 
             function onDocumentMouseWheel( event ) {
-
-                console.log("mousewheel");
-
                 // WebKit
                 var zoom=0;
 
                 if ( event.wheelDeltaY ) {
                     if(event.wheelDeltaY < 0 && fov < 148)
                         zoom = 6;
-                    else if (event.wheelDeltaY > 0 && fov > 130)
+                    else if (event.wheelDeltaY > 0 && fov > 118)
                         zoom=-6;
                 // Opera / Explorer 9
                 } else if ( event.wheelDelta ) {
                     if(event.wheelDelta > 0 && fov < 148)
                        zoom = 6;
-                    else if (event.detail < 0 && fov > 130)
+                    else if (event.detail < 0 && fov > 118)
                         zoom = -6;           
                 // Firefox
                 } else if ( event.detail ) {           
                     if(event.detail > 0 && fov < 148)
                        zoom = 6;
-                    else if (event.detail < 0 && fov > 130)
+                    else if (event.detail < 0 && fov > 118)
                       zoom = -6;
                 }
 
@@ -288,7 +277,7 @@
                         display_bt.position.z -= (windowWidth/windowHeight) * 1.7;
                 }
                 fov += zoom;
-                three.camera.projectionMatrix.makePerspective( fov, windowWidth / (windowHeight*3), 1, 1100 );
+                three.camera.projectionMatrix.makePerspective( fov, aspect, 1, 1100 );
                 three.renderer.render();
 
             } 
@@ -339,12 +328,7 @@
 
                 if(ray.intersectObject(player.display_bt).length > 0){
                              
-
                     if(!isFullScreen){
-
-                       
-
-
                        if (!container.fullscreenElement &&    // alternative standard method
                           !container.mozFullScreenElement && !container.webkitFullscreenElement) {  // current working methods
                         if (container.requestFullscreen) {
@@ -355,9 +339,6 @@
                           container.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
                         }
                       }
-
-                        
-
                     }else{
 
                         cancelFullScreen();
@@ -383,7 +364,7 @@
             function fullScreen(){    
                 if(isEquirectangle){
                     fov = 130;
-                    three.camera.projectionMatrix.makePerspective( fov, windowWidth / (windowHeight*3), 1, 1100 );
+                    three.camera.projectionMatrix.makePerspective( fov, aspect, 1, 1100 );
                 }                     
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 objectPositionFullScreen();
@@ -394,7 +375,7 @@
 
                 if(isEquirectangle){
                         fov = 130;
-                        three.camera.projectionMatrix.makePerspective( fov, windowWidth / (windowHeight*3), 1, 1100 );
+                        three.camera.projectionMatrix.makePerspective( fov,aspect, 1, 1100 );
                     }
 
 
@@ -409,7 +390,6 @@
             function objectPosition(){
 
                  if(isEquirectangle){
-                    console.log((windowWidth/windowHeight));
                     logo.scale.x = windowWidth/windowHeight*0.16946428571
                     logo.scale.y = 2;
 
@@ -754,10 +734,24 @@
 
     window.onload = function(){
 
-        //Get parameters from url (equirectangle=true)
-        getParameters();
+        //Testing if webgl is supported
 
-        init();
+        if (!window.WebGLRenderingContext) {
+             window.location = "http://get.webgl.org";
+             return;   
+        }
+
+        gl = document.getElementById( 'canvas' ).getContext("webgl");   
+        if (!gl) {
+            return;  
+        }else{
+            //Get parameters from url (equirectangle=true)
+            getParameters();
+            init();
+        }
+
+        
+        
 
     }
 
