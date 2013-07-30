@@ -126,7 +126,7 @@
 
             // material            
             var stillMaterial = new THREE.MeshLambertMaterial({
-                map: THREE.ImageUtils.loadTexture("https://s3-eu-west-1.amazonaws.com/bubblepix/nightshit/IOS_22cd7a6c792cc41b5889c08982209dcd.jpg")
+                map: THREE.ImageUtils.loadTexture("golf.jpg")
             }); 
 
 				video = document.getElementById( 'video' );
@@ -142,7 +142,7 @@
 
 				if(isEquirectangle)
 				{
-					var sphere = new THREE.Mesh( new THREE.SphereGeometry(true, 1000, 64, 500), new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'bedroom.jpg' ) } ) );
+					var sphere = new THREE.Mesh( new THREE.SphereGeometry(true, 1000, 64, 500), new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'pano.jpg' ) } ) );
 					sphere.scale.x = -1;
 				}
 				else{
@@ -374,70 +374,109 @@
             function objectPosition(){
 
                  if(isEquirectangle){
-                    logo.scale.x = windowWidth/windowHeight*0.16946428571
-                    logo.scale.y = 2;
+                    var scaleX = (windowWidth/windowHeight)/6;
+                    var scaleY = 2;
+
+                    logo.scale.x = scaleX;
+                    logo.scale.y = scaleY;
 
                     logo.position.set(-16*(windowWidth/windowHeight),38,-25);
 
-                    left_bt.scale.x = 0.3;
-                    left_bt.scale.y = 2;
+                    left_bt.scale.x = scaleX;
+                    left_bt.scale.y = scaleY;
 
-                    left_bt2.scale.x = 0.3;
-                    left_bt2.scale.y = 2;
+                    left_bt2.scale.x = scaleX;
+                    left_bt2.scale.y = scaleY;
 
                     left_bt.position.set(14*(windowWidth/windowHeight),-48, -25);
                     left_bt2.position = left_bt.position;
 
-                    right_bt.scale.x = 0.3;
-                    right_bt.scale.y = 2;
+                    right_bt.scale.x = scaleX;
+                    right_bt.scale.y = scaleY;
 
-                    right_bt2.scale.x = 0.3;
-                    right_bt2.scale.y = 2;
+                    right_bt2.scale.x = scaleX;
+                    right_bt2.scale.y = scaleY;
 
                     right_bt.position.set(15.5*(windowWidth/windowHeight),-48,-25);
                     right_bt2.position = right_bt.position;
 
-                    stop_bt.scale.x = 0.3;
-                    stop_bt.scale.y = 2;
+                    stop_bt.scale.x = scaleX;
+                    stop_bt.scale.y = scaleY;
 
-                    stop_bt2.scale.x = 0.3;
-                    stop_bt2.scale.y = 2;
+                    stop_bt2.scale.x = scaleX;
+                    stop_bt2.scale.y = scaleY;
 
                     stop_bt.position.set(12.5*(windowWidth/windowHeight),-48,-25);
                     stop_bt2.position = stop_bt.position;
 
-                    start_bt.scale.x = 0.3;
-                    start_bt.scale.y = 2;
+                    start_bt.scale.x = scaleX;
+                    start_bt.scale.y = scaleY;
 
-                    start_bt2.scale.x = 0.3;
-                    start_bt2.scale.y = 2;
+                    start_bt2.scale.x = scaleX;
+                    start_bt2.scale.y = scaleY;
 
                     start_bt.position.set(12.5*(windowWidth/windowHeight),-48,-25);
                     start_bt2.position = start_bt.position;
 
-                    display_bt.scale.x = 0.3;
-                    display_bt.scale.y = 2;
+                    display_bt.scale.x = scaleX;
+                    display_bt.scale.y = scaleY;
 
-                    display_bt2.scale.x = 0.3;
-                    display_bt2.scale.y = 2;
+                    display_bt2.scale.x = scaleX;
+                    display_bt2.scale.y = scaleY;
 
                     display_bt.position.set(17*(windowWidth/windowHeight),-48,-25);
                     display_bt2.position = display_bt.position;
 
                 }else{
-                    logo.position.set(-52.0113615107*(windowWidth/windowHeight),22,-70);
+
+                    var scaleX = (windowWidth/windowHeight)/1.77;
+                    var scaleY = 1;
+
+                    logo.scale.x = scaleX;
+                    logo.scale.y = 1;
+                    logo.position.set(-52*(windowWidth/windowHeight),22,-70);
+
+                    left_bt.scale.x = scaleX;
+                    left_bt.scale.y = scaleY;
+
+                    left_bt2.scale.x = scaleX;
+                    left_bt2.scale.y = scaleY;
 
                     left_bt.position.set(45*(windowWidth/windowHeight),-26, -70);
                     left_bt2.position = left_bt.position;
 
+                    right_bt.scale.x = scaleX;
+                    right_bt.scale.y = scaleY;
+
+                    right_bt2.scale.x = scaleX;
+                    right_bt2.scale.y = scaleY;
+
                     right_bt.position.set(50*(windowWidth/windowHeight),-26,-70);
                     right_bt2.position = right_bt.position;
+
+                    stop_bt.scale.x = scaleX;
+                    stop_bt.scale.y = scaleY;
+
+                    stop_bt2.scale.x = scaleX;
+                    stop_bt2.scale.y = scaleY;
 
                     stop_bt.position.set(40*(windowWidth/windowHeight),-26,-70);
                     stop_bt2.position = stop_bt.position;
 
+                    start_bt.scale.x = scaleX;
+                    start_bt.scale.y = scaleY;
+
+                    start_bt2.scale.x = scaleX;
+                    start_bt2.scale.y = scaleY;
+
                     start_bt.position.set(40*(windowWidth/windowHeight),-26,-70);
                     start_bt2.position = start_bt.position;
+
+                    display_bt.scale.x = scaleX;
+                    display_bt.scale.y = scaleY;
+
+                    display_bt2.scale.x = scaleX;
+                    display_bt2.scale.y = scaleY;
 
                     display_bt.position.set(55*(windowWidth/windowHeight),-26,-70);
                     display_bt2.position = display_bt.position;
@@ -450,72 +489,111 @@
 
                 if(isEquirectangle){
 
-                    logo.scale.x = 0.2;
+                    var scaleX = (windowWidth/windowHeight)/9;
+                    var step = (windowWidth/windowHeight)/0.9;
+
+                    logo.scale.x = scaleX;
                     logo.scale.y = 1;
 
                     logo.position.set(-16.5*(windowWidth/windowHeight),47,-25);
 
-                    left_bt.scale.x = 0.2;
+                    left_bt.scale.x = scaleX;
                     left_bt.scale.y = 1;
 
-                    left_bt2.scale.x = 0.2;
+                    left_bt2.scale.x = scaleX;
                     left_bt2.scale.y = 1;
 
-                    left_bt.position.set(-2,-50, -25);
+                    left_bt.position.set(-step,-50, -25);
                     left_bt2.position = left_bt.position;
 
-                    right_bt.scale.x = 0.2;
+                    right_bt.scale.x = scaleX;
                     right_bt.scale.y = 1;
 
-                    right_bt2.scale.x = 0.2;
+                    right_bt2.scale.x = scaleX;
                     right_bt2.scale.y = 1;
 
                     right_bt.position.set(0,-50,-25);
                     right_bt2.position = right_bt.position;
 
-                    stop_bt.scale.x = 0.2;
+                    stop_bt.scale.x = scaleX;
                     stop_bt.scale.y = 1;
 
-                    stop_bt2.scale.x = 0.2;
+                    stop_bt2.scale.x = scaleX;
                     stop_bt2.scale.y = 1;
 
-                    stop_bt.position.set(-4,-50,-25);
+                    stop_bt.position.set(-(2*step),-50,-25);
                     stop_bt2.position = stop_bt.position;
 
-                    start_bt.scale.x = 0.2;
+                    start_bt.scale.x = scaleX;
                     start_bt.scale.y = 1;
 
                     start_bt2.scale.x = 0.2;
                     start_bt2.scale.y = 1;
 
-                    start_bt.position.set(-4,-50,-25);
+                    start_bt.position.set(-(2*step),-50,-25);
                     start_bt2.position = start_bt.position;
 
-                    display_bt.scale.x = 0.2;
+                    display_bt.scale.x = scaleX;
                     display_bt.scale.y = 1;
 
-                    display_bt2.scale.x = 0.2;
+                    display_bt2.scale.x = scaleX;
                     display_bt2.scale.y = 1;
 
-                    display_bt.position.set(2,-50,-25);
+                    display_bt.position.set(step,-50,-25);
                     display_bt2.position = display_bt.position;
 
                 }else{
-                        three.logo.scale.x= 0.6;
-                        three.logo.scale.y = 0.5;
+                    var scaleX = (windowWidth/windowHeight)/1.77;
+                    var scaleY = 1;
 
-                        three.logo.position.set(-70.0113615107*(windowWidth/windowHeight),33,-90);
+                    var step = (windowWidth/windowHeight)/0.177;
+                    
+                    logo.scale.x = (windowWidth/windowHeight)/3;
+                    logo.scale.y = 0.5;
 
-                        player.left_bt.position.set(-10,-58,-150);
 
-                        player.right_bt.position.set(0,-58,-150);
+                    logo.position.set(-70*(windowWidth/windowHeight),33,-90);
 
-                        player.stop_bt.position.set(-20,-58,-150);
+                    left_bt.scale.x = scaleX;
+                    left_bt.scale.y = scaleY;
 
-                        player.start_bt.position = player.stop_bt.position;
-                        player.start_bt2.position = player.stop_bt.position;
+                    left_bt2.scale.x = scaleX;
+                    left_bt2.scale.y = scaleY;
 
-                        player.display_bt.position.set(10,-58,-150);
+                    left_bt.position.set(-step,-58,-150);
+
+                    right_bt.scale.x = scaleX;
+                    right_bt.scale.y = scaleY;
+
+                    right_bt2.scale.x = scaleX;
+                    right_bt2.scale.y = scaleY;
+
+                    right_bt.position.set(0,-58,-150);
+
+                    stop_bt.scale.x = scaleX;
+                    stop_bt.scale.y = scaleY;
+
+                    stop_bt2.scale.x = scaleX;
+                    stop_bt2.scale.y = scaleY;
+
+                    stop_bt.position.set(-(2*step),-58,-150);
+
+                    start_bt.scale.x = scaleX;
+                    start_bt.scale.y = scaleY;
+
+                    start_bt2.scale.x = scaleX;
+                    start_bt2.scale.y = scaleY;
+
+                    start_bt.position = stop_bt.position;
+                    start_bt2.position = stop_bt.position;
+
+                    display_bt.scale.x = scaleX;
+                    display_bt.scale.y = scaleY;
+
+                    display_bt2.scale.x = scaleX;
+                    display_bt2.scale.y = scaleY;
+
+                    display_bt.position.set(step,-58,-150);
 
                 }
 
@@ -713,28 +791,5 @@
             requestAnimFrame(function(){
                 animate(lastTime, angularSpeed, three, player);
             });
-
-    }
-
-    window.onload = function(){
-
-        //Testing if webgl is supported
-
-        if (!window.WebGLRenderingContext) {
-             window.location = "http://get.webgl.org";
-             return;   
-        }
-
-        gl = document.getElementById( 'canvas' ).getContext("webgl");   
-        if (!gl) {
-            return;  
-        }else{
-            //Get parameters from url (equirectangle=true)
-            getParameters();
-            init();
-        }
-
-        
-        
 
     }
