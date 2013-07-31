@@ -22,9 +22,8 @@ window.onload = function(){
         if (!gl) {
             return;  
         }else{
-            //Get parameters from url (equirectangle=true)
-            getParameters();
-            init();
+            //equirectangle?, image_path, xml_path
+            init(false, "https://s3-eu-west-1.amazonaws.com/bubblepix/barry1/IOS_27b67e931f6e1fb86319a68433489788.jpg", "https://bubblepix.com/bubbl3xml.xml?settings=0.7683824,0.5739152,0.491784,0.525,0.507394,photo" );
         }
     }
     </script>

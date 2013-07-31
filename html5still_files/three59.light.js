@@ -12003,7 +12003,7 @@ THREE.PlaneGeometry = function ( width, height, widthSegments, heightSegments ) 
 THREE.PlaneGeometry.prototype = Object.create( THREE.Geometry.prototype );
 
 
-THREE.SphereGeometry = function ( isRectangular, radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength ) {
+THREE.SphereGeometry = function ( isRectangular, radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength, cx, cy ) {
 	THREE.Geometry.call( this );
 	this.radius = radius = radius || 50;
 	

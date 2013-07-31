@@ -12,17 +12,9 @@
     var eventMouseX = 0;
     var eventMouseY = 0;
     var isEquirectangle;
-    var leftMouseover, rightMouseover, stopMouseover, startMouseover , logoMouseover, displayMouseover = false;
+    var leftMouseover, rightMouseover, stopMouseover, startMouseover , logoMouseover, hotspotMouseover, displayMouseover = false;
     var windowHeight;
     var windowWidth;
-
-
-    //Get parameter from XML file
-
-    var xmlDoc=loadXMLDoc("golf.xml");
-
-    var cx = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
-    var cy = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
 
     function loadXMLDoc(dname)
     {
@@ -72,7 +64,18 @@
     })();
     
 
-    function init() {
+    function init(equirectangle, image, xml) {
+
+            isEquirectangle = equirectangle;
+
+            var xmlDoc=loadXMLDoc("walk.xml");
+
+            var cx = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
+            var cy = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
+
+            console.log(cx);
+
+
 
             var angularSpeed = 0.05; // revolutions per second
             var lastTime = 0;
@@ -126,7 +129,7 @@
 
             // material            
             var stillMaterial = new THREE.MeshLambertMaterial({
-                map: THREE.ImageUtils.loadTexture("golf.jpg")
+                map: THREE.ImageUtils.loadTexture(image)
             }); 
 
 				video = document.getElementById( 'video' );
@@ -142,7 +145,7 @@
 
 				if(isEquirectangle)
 				{
-					var sphere = new THREE.Mesh( new THREE.SphereGeometry(true, 1000, 64, 500), new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'pano.jpg' ) } ) );
+					var sphere = new THREE.Mesh( new THREE.SphereGeometry(true, 1000, 64, 500), new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( image ), side : THREE.DoubleSide } ) );
 					sphere.scale.x = -1;
 				}
 				else{
@@ -288,6 +291,21 @@
 
                 if(ray.intersectObject(three.logo).length > 0){
                     window.open("https://bubblepix.com/");
+                }
+
+                //Hotspot clic
+                var intersect = ray.intersectObject(three.sphere);
+
+                if(intersect.length > 0){
+
+                    //console.log(intersect[ 0 ].face.normal);
+                    //Set the zone of the hotspot
+                    if(intersect[ 0 ].face.normal.x <= -0.14484106302930788 && intersect[ 0 ].face.normal.x >=-0.4274038730874619
+                     && intersect[ 0 ].face.normal.y <= 0.10724818883790005 && intersect[ 0 ].face.normal.y >= -0.2904716377267982
+                     && intersect[ 0 ].face.normal.z <= 0.9764391327617902 && intersect[ 0 ].face.normal.z >= 0.9009480764847629){
+                        console.log("Tete !");
+                    }
+
                 }
 
                 if(ray.intersectObject(player.left_bt).length > 0 && !isRightInteracting){
@@ -668,6 +686,30 @@
                 document.body.style.cursor = 'default';
                 logoMouseover = false;
             }
+
+            var intersect = ray.intersectObject(three.sphere);
+
+            if(intersect.length > 0){
+
+                    if(intersect[ 0 ].face.normal.x <= -0.14484106302930788 && intersect[ 0 ].face.normal.x >=-0.4274038730874619
+                     && intersect[ 0 ].face.normal.y <= 0.10724818883790005 && intersect[ 0 ].face.normal.y >= -0.2904716377267982
+                     && intersect[ 0 ].face.normal.z <= 0.9764391327617902 && intersect[ 0 ].face.normal.z >= 0.9009480764847629 ){
+
+                        document.body.style.cursor = 'pointer';
+                        hotspotMouseover= true;
+                       
+                    }else if(hotspotMouseover){
+                        if(isUserInteracting) 
+                            document.body.style.cursor = 'w-resize';
+                        else
+                            document.body.style.cursor = 'default';
+
+                        hotspotMouseover = false;
+                    }
+
+            }
+
+
 
             //Left button mouse over
             if(ray.intersectObject(player.left_bt).length > 0){
