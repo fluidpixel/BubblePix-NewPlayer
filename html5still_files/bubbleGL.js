@@ -12,7 +12,7 @@
     var eventMouseX = 0;
     var eventMouseY = 0;
     var isEquirectangle;
-    var leftMouseover, rightMouseover, stopMouseover, startMouseover , logoMouseover, hotspotMouseover, displayMouseover = false;
+    var leftMouseover, rightMouseover, stopMouseover, startMouseover , logoMouseover, hotspotMouseover, hotspotLogoMouseover, displayMouseover = false;
     var windowHeight;
     var windowWidth;
 
@@ -73,10 +73,6 @@
             var cx = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
             var cy = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
 
-            console.log(cx);
-
-
-
             var angularSpeed = 0.05; // revolutions per second
             var lastTime = 0;
             var fov = 130;
@@ -129,7 +125,7 @@
 
             // material            
             var stillMaterial = new THREE.MeshLambertMaterial({
-                map: THREE.ImageUtils.loadTexture(image)
+                map: THREE.ImageUtils.loadTexture("walk.jpg")
             }); 
 
 				video = document.getElementById( 'video' );
@@ -143,16 +139,31 @@
 				// sphere
 				//
 
+                var  global = new THREE.Object3D();
+
+
 				if(isEquirectangle)
 				{
-					var sphere = new THREE.Mesh( new THREE.SphereGeometry(true, 1000, 64, 500), new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( image ), side : THREE.DoubleSide } ) );
+					var sphere = new THREE.Mesh( new THREE.SphereGeometry(true, 1000, 64, 500), new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( "pano.jpg" ), side : THREE.DoubleSide } ) );
 					sphere.scale.x = -1;
 				}
 				else{
 					var sphere = new THREE.Mesh(new THREE.SphereGeometry(false, 200, 64, 32, 1.3+cy, Math.PI/3, 0.18+cx, Math.PI, cx, cy), stillMaterial); //isEquirectanle, radius, segments, rings, phiStart, phiLength, thetaStart, thetaLength
 				}
 
+
+
             sphere.overdraw = true;
+
+            //Hotspot
+            //x: 4.599897201238893, y: 55.792721121337564, z: -191.3288975210978
+            var hotspot = new THREE.Mesh( new THREE.PlaneGeometry(9,6), new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'html5still_files/object_images/hotspot.png' ), transparent: true } ) );
+                        hotspot.position.set(43, 48, -168);
+                        hotspot.scale.x = hotspot.scale.y = 2;
+                        
+
+            global.add(sphere);
+            global.add( hotspot );
             windowWidth = window.innerWidth;
             windowHeight = window.innerHeight;
 
@@ -163,7 +174,7 @@
             scene.add(right_bt);
             scene.add(stop_bt);
             scene.add(display_bt);
-            scene.add(sphere);
+            scene.add(global);
 
             // add full ambient lighting
             var ambientLight = new THREE.AmbientLight(0xffffff);
@@ -177,7 +188,9 @@
                 scene: scene,
                 sphere: sphere,
                 projector : projector,
-                logo: logo
+                logo: logo,
+                global: global,
+                hotspot : hotspot
             };
 
             var player = {
@@ -297,15 +310,43 @@
                 var intersect = ray.intersectObject(three.sphere);
 
                 if(intersect.length > 0){
-
+                    
                     //console.log(intersect[ 0 ].face.normal);
                     //Set the zone of the hotspot
                     if(intersect[ 0 ].face.normal.x <= -0.14484106302930788 && intersect[ 0 ].face.normal.x >=-0.4274038730874619
-                     && intersect[ 0 ].face.normal.y <= 0.10724818883790005 && intersect[ 0 ].face.normal.y >= -0.2904716377267982
+                     && intersect[ 0 ].face.normal.y <= 0.10724818883790005 && intersect[ 0 ].face.normal.y >= -0.1904716377267982
                      && intersect[ 0 ].face.normal.z <= 0.9764391327617902 && intersect[ 0 ].face.normal.z >= 0.9009480764847629){
-                        console.log("Tete !");
+
+
+                        var xmlDoc=loadXMLDoc("golf.xml");
+
+                        var cx = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
+                        var cy = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
+
+                        three.global.remove(three.sphere);
+                        THREE.ImageUtils.crossOrigin = "";
+                        three.sphere = new THREE.Mesh(new THREE.SphereGeometry(false, 200, 64, 32, 1.3+cy, Math.PI/3, 0.18+cx, Math.PI, cx, cy), new THREE.MeshLambertMaterial({
+                            map: THREE.ImageUtils.loadTexture("golf.jpg")
+                        }));
+                    
+                        three.global.add(three.sphere);
                     }
 
+                }
+
+                if(ray.intersectObject(three.hotspot).length > 0){
+                     var xmlDoc=loadXMLDoc("golf.xml");
+
+                        var cx = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
+                        var cy = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
+
+                        three.global.remove(three.sphere);
+                        THREE.ImageUtils.crossOrigin = "";
+                        three.sphere = new THREE.Mesh(new THREE.SphereGeometry(false, 200, 64, 32, 1.3+cy, Math.PI/3, 0.18+cx, Math.PI, cx, cy), new THREE.MeshLambertMaterial({
+                            map: THREE.ImageUtils.loadTexture("golf.jpg")
+                        }));
+                    
+                        three.global.add(three.sphere);
                 }
 
                 if(ray.intersectObject(player.left_bt).length > 0 && !isRightInteracting){
@@ -367,7 +408,8 @@
                 if(isEquirectangle){
                     fov = 130;
                     three.camera.projectionMatrix.makePerspective( fov, aspect, 1, 1100 );
-                }                     
+                }   
+
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 objectPositionFullScreen();
 
@@ -380,7 +422,9 @@
                         three.camera.projectionMatrix.makePerspective( fov,aspect, 1, 1100 );
                     }
 
-
+                isLeftInteracting = false;
+                isRightInteracting = false;
+                isUserInteracting = false;
                 renderer.setSize(610, 250);
 
                 three.logo.scale.x= 1;
@@ -618,7 +662,6 @@
             }
 
             
-
             function onDocumentMouseMove( event ) {
 
                     eventMouseX = event.clientX;
@@ -633,11 +676,12 @@
                 if(isLeftInteracting){ 
                     isLeftInteracting = false;
                     player.left_bt2.position.y += 1; 
+
                 }
 
                 if(isRightInteracting){ 
                     isRightInteracting = false;
-                    player.right_bt2.position.y += 1; 
+                    player.right_bt2.position.y += 1;
                 }
                 
                 eventMouseX = 0;
@@ -677,7 +721,6 @@
 
             var ray = new THREE.Raycaster(three.camera.position, vector.sub(three.camera.position).normalize());
 
-
             if(ray.intersectObject(three.logo).length > 0){
                 document.body.style.cursor = 'pointer';
                 logoMouseover = true;
@@ -692,7 +735,7 @@
             if(intersect.length > 0){
 
                     if(intersect[ 0 ].face.normal.x <= -0.14484106302930788 && intersect[ 0 ].face.normal.x >=-0.4274038730874619
-                     && intersect[ 0 ].face.normal.y <= 0.10724818883790005 && intersect[ 0 ].face.normal.y >= -0.2904716377267982
+                     && intersect[ 0 ].face.normal.y <= 0.10724818883790005 && intersect[ 0 ].face.normal.y >= -0.1904716377267982
                      && intersect[ 0 ].face.normal.z <= 0.9764391327617902 && intersect[ 0 ].face.normal.z >= 0.9009480764847629 ){
 
                         document.body.style.cursor = 'pointer';
@@ -709,7 +752,17 @@
 
             }
 
+            if(ray.intersectObject(three.hotspot).length > 0){
+                document.body.style.cursor = 'pointer';
+                hotspotLogoMouseover = true;
+            }else if(hotspotLogoMouseover){
+                if(isUserInteracting) 
+                    document.body.style.cursor = 'w-resize';
+                else
+                    document.body.style.cursor = 'default';
 
+                hotspotLogoMouseover = false;
+            }
 
             //Left button mouse over
             if(ray.intersectObject(player.left_bt).length > 0){
@@ -787,16 +840,17 @@
 
             //Default rotation
             if(!isUserInteracting && !isStopInteracting){
-                three.sphere.rotation.y += angleChange;
+                //three.sphere.rotation.y += angleChange;
+                three.global.rotation.y += angleChange;
             }
             else if(isLeftInteracting){
                 //Left rotation
-                three.sphere.rotation.y -= angleChange*3;
+                three.global.rotation.y -= angleChange*3;
 
             }
             else if(isRightInteracting){
                 //Left rotation
-                three.sphere.rotation.y += angleChange*3;
+                three.global.rotation.y += angleChange*3;
 
             }
             else if(pressStopButton){
@@ -818,9 +872,9 @@
             else if (isUserInteracting) {
                 //Rotation of sphere in function of the mouse move
                 if(eventMouseX < onMouseDownMouseX)
-                    three.sphere.rotation.y -= angleChange*Math.exp((onMouseDownMouseX - eventMouseX)*0.005);
+                    three.global.rotation.y -= angleChange*Math.exp((onMouseDownMouseX - eventMouseX)*0.005);
                 else if(eventMouseX > onMouseDownMouseX)
-                   three.sphere.rotation.y += angleChange*Math.exp((eventMouseX-onMouseDownMouseX)*0.005);
+                   three.global.rotation.y += angleChange*Math.exp((eventMouseX-onMouseDownMouseX)*0.005);
            }
            lastTime = time;
 

@@ -10189,17 +10189,6 @@ THREE.WebGLRenderer = function ( parameters ) {
 						addBuffer( scene.__webglObjects, geometryGroup, object );
 					}
 				}
-			} else if ( object instanceof THREE.Ribbon ||
-						object instanceof THREE.Line ||
-						object instanceof THREE.ParticleSystem ) {
-				geometry = object.geometry;
-				addBuffer( scene.__webglObjects, geometry, object );
-			} else if ( object instanceof THREE.ImmediateRenderObject || object.immediateRenderCallback ) {
-				addBufferImmediate( scene.__webglObjectsImmediate, object );
-			} else if ( object instanceof THREE.Sprite ) {
-				scene.__webglSprites.push( object );
-			} else if ( object instanceof THREE.LensFlare ) {
-				scene.__webglFlares.push( object );
 			}
 			object.__webglActive = true;
 		}
