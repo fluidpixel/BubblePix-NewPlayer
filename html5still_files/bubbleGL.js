@@ -12,9 +12,10 @@
     var eventMouseX = 0;
     var eventMouseY = 0;
     var isEquirectangle;
-    var leftMouseover, rightMouseover, stopMouseover, startMouseover , logoMouseover, hotspotMouseover, hotspotLogoMouseover, displayMouseover = false;
+    var leftMouseover, rightMouseover, stopMouseover, startMouseover , logoMouseover, hotspotMouseover, displayMouseover = false;
     var windowHeight;
     var windowWidth;
+    var hotspots = new Array();
 
     function loadXMLDoc(dname)
     {
@@ -62,6 +63,26 @@
             window.setTimeout(callback, 1000 / 60); //60fps
         };
     })();
+
+    function getHotspots(xml){
+
+        var hotspotsXML = xml.getElementsByTagName('hotspot');
+
+        for (var i = 0; i < hotspotsXML.length; i++) {
+            var bornes = hotspotsXML[i].getElementsByTagName('bornes')[0];
+            var logo = hotspotsXML[i].getElementsByTagName('logo')[0];
+            var action = hotspotsXML[i].getElementsByTagName('action')[0].childNodes[0].nodeValue;
+
+            var hotspot = {
+                bornes : bornes,
+                logo : logo,
+                action : action
+            };
+
+            hotspots.push(hotspot);
+        };
+        
+    }
     
 
     function init(equirectangle, image, xml) {
@@ -69,6 +90,7 @@
             isEquirectangle = equirectangle;
 
             var xmlDoc=loadXMLDoc("walk.xml");
+            getHotspots(xmlDoc);
 
             var cx = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
             var cy = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
@@ -151,19 +173,18 @@
 					var sphere = new THREE.Mesh(new THREE.SphereGeometry(false, 200, 64, 32, 1.3+cy, Math.PI/3, 0.18+cx, Math.PI, cx, cy), stillMaterial); //isEquirectanle, radius, segments, rings, phiStart, phiLength, thetaStart, thetaLength
 				}
 
-
-
             sphere.overdraw = true;
+            global.add(sphere);
 
             //Hotspot
-            //x: 4.599897201238893, y: 55.792721121337564, z: -191.3288975210978
-            var hotspot = new THREE.Mesh( new THREE.PlaneGeometry(9,6), new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'html5still_files/object_images/hotspot.png' ), transparent: true } ) );
-                        hotspot.position.set(43, 48, -168);
-                        hotspot.scale.x = hotspot.scale.y = 2;
-                        
+            for (var i = 0; i < hotspots.length; i++) {
+                var hotspotLogo = new THREE.Mesh( new THREE.PlaneGeometry(9,6), new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'html5still_files/object_images/hotspot.png' ), transparent: true } ) );
+                hotspotLogo.position.set(hotspots[i].logo.getAttribute('x'), hotspots[i].logo.getAttribute('y'), hotspots[i].logo.getAttribute('z'));
+                hotspotLogo.scale.x = hotspotLogo.scale.y = 2;
 
-            global.add(sphere);
-            global.add( hotspot );
+                global.add( hotspotLogo );
+            };      
+            
             windowWidth = window.innerWidth;
             windowHeight = window.innerHeight;
 
@@ -189,8 +210,7 @@
                 sphere: sphere,
                 projector : projector,
                 logo: logo,
-                global: global,
-                hotspot : hotspot
+                global: global
             };
 
             var player = {
@@ -310,43 +330,19 @@
                 var intersect = ray.intersectObject(three.sphere);
 
                 if(intersect.length > 0){
-                    
-                    //console.log(intersect[ 0 ].face.normal);
-                    //Set the zone of the hotspot
-                    if(intersect[ 0 ].face.normal.x <= -0.14484106302930788 && intersect[ 0 ].face.normal.x >=-0.4274038730874619
-                     && intersect[ 0 ].face.normal.y <= 0.10724818883790005 && intersect[ 0 ].face.normal.y >= -0.1904716377267982
-                     && intersect[ 0 ].face.normal.z <= 0.9764391327617902 && intersect[ 0 ].face.normal.z >= 0.9009480764847629){
 
+                    for (var i = 0; i < hotspots.length; i++) {
+                        var hotspot = hotspots[i];
+                        //Check hotspot bornes
+                        if(intersect[ 0 ].face.normal.x >= hotspot.bornes.getAttribute('minX') && intersect[ 0 ].face.normal.x <= hotspot.bornes.getAttribute('maxX')
+                     && intersect[ 0 ].face.normal.y >= hotspot.bornes.getAttribute('minY') && intersect[ 0 ].face.normal.y <= hotspot.bornes.getAttribute('maxY')
+                     && intersect[ 0 ].face.normal.z >= hotspot.bornes.getAttribute('minZ') && intersect[ 0 ].face.normal.z <= hotspot.bornes.getAttribute('maxZ')){
 
-                        var xmlDoc=loadXMLDoc("golf.xml");
+                            eval(hotspot.action);
+                            isUserInteracting = false;
+                        }
+                    };
 
-                        var cx = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
-                        var cy = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
-
-                        three.global.remove(three.sphere);
-                        THREE.ImageUtils.crossOrigin = "";
-                        three.sphere = new THREE.Mesh(new THREE.SphereGeometry(false, 200, 64, 32, 1.3+cy, Math.PI/3, 0.18+cx, Math.PI, cx, cy), new THREE.MeshLambertMaterial({
-                            map: THREE.ImageUtils.loadTexture("golf.jpg")
-                        }));
-                    
-                        three.global.add(three.sphere);
-                    }
-
-                }
-
-                if(ray.intersectObject(three.hotspot).length > 0){
-                     var xmlDoc=loadXMLDoc("golf.xml");
-
-                        var cx = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
-                        var cy = parseFloat(xmlDoc.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
-
-                        three.global.remove(three.sphere);
-                        THREE.ImageUtils.crossOrigin = "";
-                        three.sphere = new THREE.Mesh(new THREE.SphereGeometry(false, 200, 64, 32, 1.3+cy, Math.PI/3, 0.18+cx, Math.PI, cx, cy), new THREE.MeshLambertMaterial({
-                            map: THREE.ImageUtils.loadTexture("golf.jpg")
-                        }));
-                    
-                        three.global.add(three.sphere);
                 }
 
                 if(ray.intersectObject(player.left_bt).length > 0 && !isRightInteracting){
@@ -734,34 +730,26 @@
 
             if(intersect.length > 0){
 
-                    if(intersect[ 0 ].face.normal.x <= -0.14484106302930788 && intersect[ 0 ].face.normal.x >=-0.4274038730874619
-                     && intersect[ 0 ].face.normal.y <= 0.10724818883790005 && intersect[ 0 ].face.normal.y >= -0.1904716377267982
-                     && intersect[ 0 ].face.normal.z <= 0.9764391327617902 && intersect[ 0 ].face.normal.z >= 0.9009480764847629 ){
+                   for (var i = 0; i < hotspots.length; i++) {
+                        var hotspot = hotspots[i];
+                        //Check hotspot bornes
+                        if(intersect[ 0 ].face.normal.x >= hotspot.bornes.getAttribute('minX') && intersect[ 0 ].face.normal.x <= hotspot.bornes.getAttribute('maxX')
+                         && intersect[ 0 ].face.normal.y >= hotspot.bornes.getAttribute('minY') && intersect[ 0 ].face.normal.y <= hotspot.bornes.getAttribute('maxY')
+                         && intersect[ 0 ].face.normal.z >= hotspot.bornes.getAttribute('minZ') && intersect[ 0 ].face.normal.z <= hotspot.bornes.getAttribute('maxZ')){
 
-                        document.body.style.cursor = 'pointer';
-                        hotspotMouseover= true;
-                       
-                    }else if(hotspotMouseover){
-                        if(isUserInteracting) 
-                            document.body.style.cursor = 'w-resize';
-                        else
-                            document.body.style.cursor = 'default';
+                            document.body.style.cursor = 'pointer';
+                            hotspotMouseover= true;
+                           
+                        }else if(hotspotMouseover){
+                            if(isUserInteracting) 
+                                document.body.style.cursor = 'w-resize';
+                            else
+                                document.body.style.cursor = 'default';
 
-                        hotspotMouseover = false;
+                            hotspotMouseover = false;
+                        }
                     }
 
-            }
-
-            if(ray.intersectObject(three.hotspot).length > 0){
-                document.body.style.cursor = 'pointer';
-                hotspotLogoMouseover = true;
-            }else if(hotspotLogoMouseover){
-                if(isUserInteracting) 
-                    document.body.style.cursor = 'w-resize';
-                else
-                    document.body.style.cursor = 'default';
-
-                hotspotLogoMouseover = false;
             }
 
             //Left button mouse over
