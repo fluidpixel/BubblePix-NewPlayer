@@ -18,7 +18,7 @@ window.onload = function(){
              return;   
         }
 
-        gl = document.getElementById( 'canvas' ).getContext("webgl");   
+        gl = document.getElementById( 'canvas' ).getContext("webgl") || canvas.getContext("experimental-webgl");   
         if (!gl) {
             return;  
         }else{
