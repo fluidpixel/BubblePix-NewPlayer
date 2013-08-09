@@ -44,12 +44,15 @@
 
     var getElementPosition = function(element) {
         var top = left = 0;
-        do {
-            top  += element.offsetTop  || 0;
-            left += element.offsetLeft || 0;
-            element =  element.offsetParent;
-        }
-        while (element);
+        if(!isFullScreen){
+            do {
+                top  += element.offsetTop  || 0;
+                left += element.offsetLeft || 0;
+                element =  element.offsetParent;
+            }
+            while (element);
+        }   
+
         return {top: top, left: left};
     }
 
@@ -100,6 +103,7 @@
             var fov = 130;
 
             var container = document.getElementById( 'container' );
+            var fullScreenContainer = document.getElementById( 'fullScreenContainer' );
             var projector = new THREE.Projector();
             // renderer
             var renderer = new THREE.WebGLRenderer();
@@ -331,6 +335,13 @@
 
                 if(intersect.length > 0){
 
+                    //For obtain coordinates bornes
+                    //console.log(intersect[ 0 ].face.normal);
+
+                    //For obtain coordinate hotspot logo
+                    //console.log(intersects[ 0 ].point);
+
+
                     for (var i = 0; i < hotspots.length; i++) {
                         var hotspot = hotspots[i];
                         //Check hotspot bornes
@@ -368,21 +379,21 @@
                 if(ray.intersectObject(player.display_bt).length > 0){
                              
                     if(!isFullScreen){
-                       if (!container.fullscreenElement &&    // alternative standard method
-                          !container.mozFullScreenElement && !container.webkitFullscreenElement) {  // current working methods
-                        if (container.requestFullscreen) {
-                          container.requestFullscreen();
-                        } else if (container.mozRequestFullScreen) {
-                          container.mozRequestFullScreen();
-                        } else if (container.webkitRequestFullscreen) {
-                          container.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                       if (!fullScreenContainer.fullscreenElement &&    // alternative standard method
+                          !fullScreenContainer.mozFullScreenElement && !fullScreenContainer.webkitFullscreenElement) {  // current working methods
+                        if (fullScreenContainer.requestFullscreen) {
+                          fullScreenContainer.requestFullscreen();
+                        } else if (fullScreenContainer.mozRequestFullScreen) {
+                          fullScreenContainer.mozRequestFullScreen();
+                        } else if (fullScreenContainer.webkitRequestFullscreen) {
+                          fullScreenContainer.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
                         }
                       }
                     }else{
 
                         cancelFullScreen();
 
-                        if (container.cancelFullScreen) {
+                        if (fullScreenContainer.cancelFullScreen) {
                           document.cancelFullScreen();
                         } else if (document.mozCancelFullScreen) {
                           document.mozCancelFullScreen();
@@ -405,8 +416,12 @@
                     fov = 130;
                     three.camera.projectionMatrix.makePerspective( fov, aspect, 1, 1100 );
                 }   
+                 isLeftInteracting = false;
+                isRightInteracting = false;
+                isUserInteracting = false;
 
                 renderer.setSize(window.innerWidth, window.innerHeight);
+                fullScreenContainer.appendChild( renderer.domElement );
                 objectPositionFullScreen();
 
             }
@@ -487,12 +502,12 @@
 
                 }else{
 
-                    var scaleX = (windowWidth/windowHeight)/1.77;
-                    var scaleY = 1;
+                    var scaleX = (windowWidth/windowHeight)/2.5;
+                    var scaleY = 0.7;
 
                     logo.scale.x = scaleX;
-                    logo.scale.y = 1;
-                    logo.position.set(-52*(windowWidth/windowHeight),22,-70);
+                    logo.scale.y = 0.8;
+                    logo.position.set(-37*(windowWidth/windowHeight),15,-50);
 
                     left_bt.scale.x = scaleX;
                     left_bt.scale.y = scaleY;
@@ -500,7 +515,7 @@
                     left_bt2.scale.x = scaleX;
                     left_bt2.scale.y = scaleY;
 
-                    left_bt.position.set(45*(windowWidth/windowHeight),-26, -70);
+                    left_bt.position.set(34*(windowWidth/windowHeight),-18.5, -50);
                     left_bt2.position = left_bt.position;
 
                     right_bt.scale.x = scaleX;
@@ -509,7 +524,7 @@
                     right_bt2.scale.x = scaleX;
                     right_bt2.scale.y = scaleY;
 
-                    right_bt.position.set(50*(windowWidth/windowHeight),-26,-70);
+                    right_bt.position.set(37*(windowWidth/windowHeight),-18.5,-50);
                     right_bt2.position = right_bt.position;
 
                     stop_bt.scale.x = scaleX;
@@ -518,7 +533,7 @@
                     stop_bt2.scale.x = scaleX;
                     stop_bt2.scale.y = scaleY;
 
-                    stop_bt.position.set(40*(windowWidth/windowHeight),-26,-70);
+                    stop_bt.position.set(31*(windowWidth/windowHeight),-18.5,-50);
                     stop_bt2.position = stop_bt.position;
 
                     start_bt.scale.x = scaleX;
@@ -527,7 +542,7 @@
                     start_bt2.scale.x = scaleX;
                     start_bt2.scale.y = scaleY;
 
-                    start_bt.position.set(40*(windowWidth/windowHeight),-26,-70);
+                    start_bt.position.set(31*(windowWidth/windowHeight),-18.5,-50);
                     start_bt2.position = start_bt.position;
 
                     display_bt.scale.x = scaleX;
@@ -536,7 +551,7 @@
                     display_bt2.scale.x = scaleX;
                     display_bt2.scale.y = scaleY;
 
-                    display_bt.position.set(55*(windowWidth/windowHeight),-26,-70);
+                    display_bt.position.set(40*(windowWidth/windowHeight),-18.5,-50);
                     display_bt2.position = display_bt.position;
                     
                 }
