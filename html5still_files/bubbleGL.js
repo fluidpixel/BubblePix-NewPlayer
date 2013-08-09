@@ -440,6 +440,7 @@
 
                 three.logo.scale.x= 1;
                 three.logo.scale.y = 1;
+                container.appendChild( renderer.domElement );
 
                 objectPosition();
                 }
