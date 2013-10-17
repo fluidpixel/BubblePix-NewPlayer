@@ -13,10 +13,11 @@
 // It calculates the surface of the sphere instead of approximating it with triangles.
 
 /*jshint laxcomma: true, laxbreak: true, browser: true */
+
 (function() {"use strict";
 
 	var opts = {
-		tilt : 40,
+		tilt : 10,
 		turn : 20,
 		fpr : 128
 	};
@@ -45,11 +46,12 @@
 	// Horizontal scale of viewing area
 	var vs = 1;
 	// Vertical scale of viewing area
-	var rot = 0.0001;
+	var xRot = 0.0001;
+	var yRot = 1;
 	// NB    The viewing area is an abstract rectangle in the 3d world and is not
 	//    the same as the canvas used to display the image.
 
-	var F = [0, 20, 0];
+	var F = [0, 0, 0];
 	// Focal point of viewer
 	var S = [0, 0, 0];
 	// Centre of sphere/planet
@@ -65,7 +67,7 @@
 	// as this will result in overflow errors which are not traped
 	// and do not stop the script but will result in incorrect
 	// displaying of the texture upon the sphere.
-	var f = 20;
+	var f = 30;
 
 	// There may be a solution to the above problem by finding L in
 	// a slightly different way.
@@ -229,7 +231,7 @@
 
 			m1 = ((-b) - (Math.sqrt(s))) / (2 * a);
 			Y = Y;
-			;
+
 			L[X] = m1 * V[X];
 			//    bx+m1*V[X];
 			L[Y] = by + (m1 * V[Y]);
@@ -259,22 +261,20 @@
 			// coresponds to on the texture
 			if (!isBubblePixImage) {
 				var lh = textureWidth + textureWidth * (Math.atan2(L[Y], L[X]) + Math.PI ) / (2 * Math.PI);
-
 				// %textureHeight at end to get rid of south pole bug. probaly means that one
 				// pixel may be a color from the opposite pole but as long as the
 				// poles are the same color this won't be noticed.
-
 				var lv = textureWidth * Math.floor(textureHeight - 1 - (textureHeight * (Math.acos(L[Z] / r) / Math.PI) % textureHeight));
 			} else {
 
 				var lh = 0.75 * sry;
 				var lv = crz;
-				lh *=V[Z];
-				lv *=V[Z];
-				lh *=10;
-				lv *=10;
-				lh+=0.5;
-				lv+=0.5;
+				lh *= V[Z];
+				lv *= V[Z];
+				lh *= 10;
+				lv *= 10;
+				lh += 0.5;
+				lv += 0.5;
 			}
 
 			return {
@@ -370,15 +370,19 @@
 					var vector = getVector(pixel);
 					if (vector !== null) {
 						//rotate texture on sphere
-						rot += 0.00001;
-						var lh = Math.floor(vector.lh + rot ) % textureWidth;
+
+						var lh = Math.floor(vector.lh + xRot + xMovement) % textureWidth;
+						var lv = (vector.lv + (textureHeight * yMovement));
+						xRot += xMovement;
+
 						/*           lh = (lh < 0)
 						 ? ((textureWidth-1) - ((lh-1)%textureWidth))
 						 : (lh % textureWidth) ;
 						 */
-					
+
 						var idxC = pixel * 4;
-						var idxT = (lh + vector.lv) * 4;
+
+						var idxT = (lh + lv) * 4;
 
 						/* TODO light for alpha channel or alter s or l in hsl color value?
 						- fn to calc distance between two points on sphere?
@@ -434,9 +438,7 @@
 			gCtxImg.clearRect(0, 0, textureHeight, textureWidth);
 			gCtxImg.drawImage(aImg, 0, textureWidth / 2 - aImg.naturalHeight / 2);
 			textureImageData = gCtxImg.getImageData(0, 0, textureHeight, textureWidth);
-		}
-		else
-		{
+		} else {
 			// mad bubblepix image
 			gImage = document.createElement('canvas');
 			textureWidth = aImg.naturalWidth;
@@ -453,23 +455,18 @@
 		vs_cv = ((vs) / (cHeight));
 	}
 
-
-	this.createSphere = function(gCanvas, textureUrl) {
-		//size = Math.max(gCanvas.width, gCanvas.height);
-		size = gCanvas.width;
-		gCtx = gCanvas.getContext("2d");
-		canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
-		cHeight = gCanvas.height;
-		cWidth = gCanvas.width;
-		var aspect = cWidth/cHeight;
+	function setFOV(fov) {
+		console.log("Changing FOV to " + fov);
+		var aspect = cWidth / cHeight;
 		//ry=90+opts.tilt;
-
+		FOV = fov;
 		ry = 90;
 		rz = 180 + opts.turn;
 		RY = (270 - ry);
 		RZ = (180 - rz);
-		hs = 12 * aspect;
-		vs = hs / aspect;;		
+		vs = fov;
+		hs = vs * aspect;
+		hs *= 1.25;
 		hhs = 0.5 * hs;
 		hvs = 0.5 * vs;
 		hs_ch = (hs / cWidth);
@@ -482,6 +479,20 @@
 
 		b = (2 * (-f * V[Y]));
 		b2 = Math.pow(b, 2);
+	}
+
+
+	this.createSphere = function(gCanvas, textureUrl) {
+		//size = Math.max(gCanvas.width, gCanvas.height);
+		size = gCanvas.width;
+		gCtx = gCanvas.getContext("2d");
+		setEventListeners(gCanvas);
+
+		canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
+		cHeight = gCanvas.height;
+		cWidth = gCanvas.width;
+
+		setFOV(20);
 
 		var img = new Image();
 		img.onload = function() {
@@ -515,4 +526,95 @@
 		};
 		img.setAttribute("src", textureUrl);
 	};
+
+	/////bubble interaction
+	var
+	bubbleCanvas;
+	var isUserInteracting = false;
+	var isLeftInteracting = false;
+	var isRightInteracting = false;
+	var isStopInteracting = false;
+	var isStartInteracting = false;
+	var pressStartButton = false;
+	var pressStopButton = false;
+	var isFullScreen = false;
+	var onMouseDownEventX = 0;
+	var onMouseDownEventY = 0;
+	var eventMouseX = 0;
+	var eventMouseY = 0;
+	var xMovement = 0;
+	var yMovement = 0;
+	var zoom = 0;
+	var FOV = 20;
+	function setEventListeners(canvas) {
+		bubbleCanvas = canvas;
+		bubbleCanvas.addEventListener("mousedown", mouseDownEvent, false);
+		bubbleCanvas.addEventListener("mouseup", mouseUpEvent, false);
+		bubbleCanvas.addEventListener("mousemove", mouseMoveEvent, false);
+		bubbleCanvas.addEventListener("mouseout", mouseOutEvent, false);
+		document.addEventListener("mouseup", mouseUpEvent, false);
+		if (!isBubblePixImage) {
+			bubbleCanvas.addEventListener('mousewheel', mouseScrollEvent, false);
+			bubbleCanvas.addEventListener('DOMMouseScroll', mouseScrollEvent, false);
+		}
+	}
+
+	function mouseDownEvent(event) {
+		eventMouseX = event.clientX;
+		eventMouseY = event.clientY;
+		isUserInteracting = true;
+		onMouseDownEventX = event.clientX;
+		onMouseDownEventY = event.clientY;
+		//alert("X = " + eventMouseX + "Y = " + eventMouseY);
+	}
+
+	function mouseUpEvent(event) {
+		isUserInteracting = false;
+		eventMouseX = event.clientX;
+		eventMouseY = event.clientY;
+		xMovement = 0;
+		yMovement = 0;
+	}
+
+	function mouseOutEvent(event) {
+		//isUserInteracting = false;
+		eventMouseX = event.clientX;
+		eventMouseY = event.clientY;
+	}
+
+	function mouseMoveEvent(event) {
+		if (isUserInteracting) {
+			eventMouseX = event.clientX;
+			eventMouseY = event.clientY;
+			xMovement = (onMouseDownEventX - eventMouseX) / 500000;
+			yMovement = (onMouseDownEventY - eventMouseY);
+
+			//alert("X = " + eventMouseX + "Y = " + eventMouseY);
+		}
+	}
+
+	function mouseScrollEvent(event) {
+		console.log("scroll");
+		if (event.wheelDeltaY) {
+			if (event.wheelDeltaY < 0 && FOV < 21)
+				setFOV(34);
+			else if (event.wheelDeltaY > 0 && FOV > 33)
+				setFOV(20);
+			// Opera / Explorer 9
+		} else if (event.wheelDelta) {
+			if (event.wheelDelta > 0 && FOV < 21)
+				setFOV(34);
+			else if (event.detail < 0 && FOV > 33)
+				setFOV(20);
+			// Firefox
+		} else if (event.detail) {
+			if (event.detail > 0 && FOV < 21)
+				setFOV(34);
+			else if (event.detail < 0 && FOV > 33)
+				setFOV(20);
+		}
+
+	}
+
 }).call(this);
+

@@ -1,63 +1,69 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<title>BubblePod Renderer</title>
-<style>
-body, html {height: 100%;}
-body {
-    background-color: white;
-	margin:0; padding:0;
-	color: white;
-}
-#outer  {
-  display: table;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  overflow: hidden;
-  text-align: center;
-}
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<title>BubblePod Renderer</title>		
+		<style>
+			body, html {
+				height: 100%;
+			}
+			body {
+				background-color: white;
+				margin: 0;
+				padding: 0;
+				color: white;
+			}
+			#outer {
+				display: table;
+				width: 100%;
+				height: 100%;
+				position: absolute;
+				overflow: hidden;
+				text-align: center;
+			}
 
-#inner {
-display: table-cell;
-  vertical-align: middle;
-}
-a {color: white;}
-</style>
-<script src="Stats.js"></script>
-<script src="requestanimationframe.polyfill.js"></script>
-<script src="..\sphere.js"></script>
-<script>
-	function go() {
-		var texture = "PanoOutput.png";
-		createSphere(document.getElementById("sphere"),texture);
+			#inner {
+				display: table-cell;
+				vertical-align: middle;
+			}
+			a {
+				color: white;
+			}
+		</style>
+		<script src="Stats.js"></script>
+		<script src="requestanimationframe.polyfill.js"></script>
+		<script src="..\sphere.js"></script>
+		<script>
+			function go() {
+				var texture = "PanoOutput.png";
+				createSphere(document.getElementById("sphere"), texture);
 
-		var stats = new Stats();
-		// Align top-left
-		stats.getDomElement().style.position = 'relative';
-		stats.getDomElement().style.marginLeft = '-40px';
-		stats.getDomElement().style.left = '50%';
+				var stats = new Stats();
+				// Align top-left
+				stats.getDomElement().style.position = 'relative';
+				stats.getDomElement().style.marginLeft = '-40px';
+				stats.getDomElement().style.left = '50%';
+
+				document.getElementById("fps").appendChild(stats.getDomElement());
+				setInterval(function() {
+					stats.update();
+
+				}, 1000 / 200);
+			}
 		
-		document.getElementById("fps").appendChild(stats.getDomElement());
-		setInterval(function () {
-		  stats.update();
-		  
-		}, 1000 / 200);
-	}
-</script>
-</head>
-<body onload="go()">
-    <div id="outer">
-		<div id="inner">
-			<h3>BubblePod</h3>
-			<canvas id="sphere" width="611px" height="244px">
-				Sorry, your browser does not support the canvas element
-			</canvas>
-			<div id="fps"></div>
-			<div>
-			</div>			
+		</script>
+	</head>
+	<body onload="go()" >
+		<div id="outer">
+			<div id="inner">
+				<h3>BubblePod</h3>
+				<canvas id="sphere" width="400" height="200px">
+					Sorry, your browser does not support the canvas element
+
+				</canvas>
+				<div id="fps"></div>
+				<div></div>
+			</div>
 		</div>
-	</div>
-</body>
+	</body>
 </html>
