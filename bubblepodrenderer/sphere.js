@@ -415,7 +415,6 @@
 						//copyFnc(idxC, idxT);
 					}
 				}
-
 				gCtx.putImageData(canvasImageData, 0, 0);
 			}
 		};
