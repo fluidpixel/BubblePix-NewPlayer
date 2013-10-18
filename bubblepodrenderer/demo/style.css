@@ -1,0 +1,66 @@
+body, html {
+	height: 100%;
+}
+body {
+	background-color: black;
+	margin: 0;
+	padding: 0;
+	color: lightgrey;
+}
+
+#outer {
+	display: table;
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	overflow: hidden;
+	text-align: center;
+}
+
+#bubble {
+	//display: table-cell;
+	vertical-align: middle;
+	width:600px;
+	height:244px;
+	margin: 0 auto;
+	position:relative;
+}
+a {
+	color: white;
+}
+
+#sphere{
+	width: 100%;
+	height: 100%;
+	position:relative;
+	z-index: 0;
+}
+
+#ui{
+	position: absolute;
+	z-index: 1;
+	width:100%;
+	height:100%;
+	pointer-events:none;
+}
+#logo{
+	position: absolute;
+	left: 5px;
+	top: 5px;
+}
+
+#logo img{
+	width: 60px;
+	height: 60px;
+}
+
+#fullscreen{
+	position:absolute;
+	right:5px;
+	bottom:5px;
+}
+
+#fullscreen img{
+	width: 20px;
+	height: 20px;
+}
