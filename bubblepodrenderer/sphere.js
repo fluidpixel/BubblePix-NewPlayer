@@ -364,11 +364,7 @@
 						var lh = Math.floor(vector.lh + xRot + xMovement) % textureWidth;
 						var yRotVal = yMovement + yRot;
 
-						if (yRotVal > bubbleCanvas.height / 4)
-							yRotVal = bubbleCanvas.height / 4;
-
-						if (yRotVal < -bubbleCanvas.height / 4)
-							yRotVal = -bubbleCanvas.height / 4;
+						yRotVal = YClamp(yRotVal);
 						var lv = (vector.lv + (textureHeight * (yRotVal)));
 
 						xRot += xMovement;
@@ -464,7 +460,7 @@
 		RZ = (180 - rz);
 		vs = fov;
 		hs = vs * aspect;
-		//hs *= 1.25;
+		hs *= 1.25;
 		hhs = 0.5 * hs;
 		hvs = 0.5 * vs;
 		hs_ch = (hs / cWidth);
@@ -490,7 +486,7 @@
 		cHeight = gCanvas.height;
 		cWidth = gCanvas.width;
 
-		setFOV(18);
+		setFOV(15);
 
 		var img = new Image();
 		img.onload = function() {
@@ -571,14 +567,23 @@
 		eventMouseX = event.clientX;
 		eventMouseY = event.clientY;
 		yRot += yMovement;
-		if (yRot > bubbleCanvas.height / 4)
-			yRot = bubbleCanvas.height / 4;
-
-		if (yRot < -bubbleCanvas.height / 4)
-			yRot = -bubbleCanvas.height / 4;
-		console.log(yRot);
+		yRot = YClamp(yRot);
+		//console.log(yRot);
 		xMovement = 0;
 		yMovement = 0;
+	}
+
+	function YClamp(y) {
+
+		var clampVal = (bubbleCanvas.height * bubbleCanvas.width) / 1000;
+		//console.log(clampVal);
+		if (y > clampVal)
+			y = clampVal;
+
+		if (y < -clampVal)
+			y = -clampVal;
+
+		return y;
 	}
 
 	function mouseOutEvent(event) {
