@@ -2,13 +2,14 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-		<title>BubblePod Renderer</title>		
+		<title>BubblePod Renderer</title>
 		<script src="Stats.js"></script>
 		<script src="requestanimationframe.polyfill.js"></script>
 		<script src="..\sphere.js"></script>
 		<link href="style.css" rel="stylesheet">
 		<script>
 			function go() {
+
 				var texture = "bubble_equi.jpg";
 				createSphere(document.getElementById("sphere"), texture);
 
@@ -23,15 +24,15 @@
 					stats.update();
 
 				}, 1000 / 200);
+
 			}
-		
+
 		</script>
 	</head>
 	<body onload="go()" >
 		<div id="outer">
-<<<<<<< HEAD
 			<h3>BubblePod</h3>
-			<div id="bubble">
+			<div id="bubble" >
 				<div id="ui">
 					<div id="logo">
 						<img src="images/logo.png">
@@ -41,16 +42,15 @@
 					</div>
 				</div>
 				<canvas id="sphere">
-=======
-			<div id="inner">
-				<h3>BubblePod</h3>
-				<canvas id="sphere" width="400" height="200">
->>>>>>> 2ef9235a554b42eab36a7bbd3d2847f7dd97b53a
-					Sorry, your browser does not support the canvas element
-				</canvas>
+					<div id="inner">
+						<h3>BubblePod</h3>
+						<canvas id="sphere" >
+
+							Sorry, your browser does not support the canvas element
+						</canvas>
+					</div>
+					<div id="fps"></div>
+					<div></div>
 			</div>
-			<div id="fps"></div>
-			<div></div>
-		</div>
 	</body>
 </html>

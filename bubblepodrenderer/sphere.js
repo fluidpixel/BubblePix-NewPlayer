@@ -17,9 +17,9 @@
 (function() {"use strict";
 
 	var opts = {
-		tilt : 10,
-		turn : 20,
-		fpr : 128
+		tilt : 0,
+		turn : 0,
+		fpr : 1
 	};
 
 	// frame count, current angle of rotation. inc/dec to turn.
@@ -32,7 +32,7 @@
 	var canvasImageData, textureImageData;
 
 	// Number of frames for one complete rotation.
-	var fpr = 800;
+	var fpr = 8;
 
 	// Constants for indexing dimentions
 	var X = 0, Y = 1, Z = 2;
@@ -47,7 +47,7 @@
 	var vs = 1;
 	// Vertical scale of viewing area
 	var xRot = 0.0001;
-	var yRot = 1;
+	var yRot = 0;
 	// NB    The viewing area is an abstract rectangle in the 3d world and is not
 	//    the same as the canvas used to display the image.
 
@@ -261,20 +261,10 @@
 			// coresponds to on the texture
 			if (!isBubblePixImage) {
 				var lh = textureWidth + textureWidth * (Math.atan2(L[Y], L[X]) + Math.PI ) / (2 * Math.PI);
-				// %textureHeight at end to get rid of south pole bug. probaly means that one
-				// pixel may be a color from the opposite pole but as long as the
-				// poles are the same color this won't be noticed.
 				var lv = textureWidth * Math.floor(textureHeight - 1 - (textureHeight * (Math.acos(L[Z] / r) / Math.PI) % textureHeight));
+
 			} else {
 
-				var lh = 0.75 * sry;
-				var lv = crz;
-				lh *= V[Z];
-				lv *= V[Z];
-				lh *= 10;
-				lv *= 10;
-				lh += 0.5;
-				lv += 0.5;
 			}
 
 			return {
@@ -313,8 +303,8 @@
 			var cache = new Array(cWidth * cHeight);
 			return function(pixel) {
 				if (cache[pixel] === undefined) {
-					var v = Math.floor(pixel / size);
-					var h = pixel - v * size;
+					var v = Math.floor(pixel / cWidth);
+					var h = pixel - v * cWidth;
 					cache[pixel] = calculateVector(h, v);
 				}
 				return cache[pixel];
@@ -372,7 +362,11 @@
 						//rotate texture on sphere
 
 						var lh = Math.floor(vector.lh + xRot + xMovement) % textureWidth;
-						var lv = (vector.lv + (textureHeight * yMovement));
+						var yRotVal = yMovement + yRot;
+
+						yRotVal = YClamp(yRotVal);
+						var lv = (vector.lv + (textureHeight * (yRotVal)));
+
 						xRot += xMovement;
 
 						/*           lh = (lh < 0)
@@ -396,21 +390,6 @@
 						canvasData[idxC + 2] = textureData[idxT + 2];
 						canvasData[idxC + 3] = 255;
 
-						/*
-						if (isBubblePixImage) {
-						canvasData[idxC + 0] = 255;
-						canvasData[idxC + 1] = 0;
-						canvasData[idxC + 2] = 0;
-						canvasData[idxC + 3] = 255;
-						}*/
-
-						// Slower?
-						/*
-						canvasImageData.data[idxC + 0] = textureImageData.data[idxT + 0];
-						canvasImageData.data[idxC + 1] = textureImageData.data[idxT + 1];
-						canvasImageData.data[idxC + 2] = textureImageData.data[idxT + 2];
-						canvasImageData.data[idxC + 3] = 255;
-						*/
 						// Faster?
 						//copyFnc(idxC, idxT);
 					}
@@ -427,10 +406,14 @@
 		}
 		if (!isBubblePixImage) {
 			//bubblepod image
+
 			gImage = document.createElement('canvas');
 			textureWidth = aImg.naturalWidth;
+			console.log("Texture Width = " + aImg.naturalWidth);
 			textureHeight = aImg.naturalWidth;
+			console.log("Texture height = " + aImg.naturalHeight);
 			gImage.width = textureWidth;
+
 			gImage.height = textureHeight;
 
 			gCtxImg = gImage.getContext("2d");
@@ -465,7 +448,7 @@
 		RZ = (180 - rz);
 		vs = fov;
 		hs = vs * aspect;
-		hs *= 1.25;
+		hs *= 1.5;
 		hhs = 0.5 * hs;
 		hvs = 0.5 * vs;
 		hs_ch = (hs / cWidth);
@@ -483,15 +466,31 @@
 
 	this.createSphere = function(gCanvas, textureUrl) {
 		//size = Math.max(gCanvas.width, gCanvas.height);
-		size = gCanvas.width;
-		gCtx = gCanvas.getContext("2d");
-		setEventListeners(gCanvas);
 
-		canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
+		gCtx = gCanvas.getContext("2d");
+		var bbl = document.getElementById("bubble");
+
+		
+		/*
+		 if (canWidth > 2048) {
+		 var canAspect = canWidth / canHeight;
+		 canWidth = 2048;
+		 canHeight = canHeight / canAspect;
+		 }*/
+
+		gCanvas.height = canWidth;
+		gCanvas.width = canHeight;
+		setEventListeners(gCanvas);
 		cHeight = gCanvas.height;
 		cWidth = gCanvas.width;
+		console.log("Canvas Width = " + canWidth);
+		console.log("Canvas Height = " + canHeight);
+		console.log("Canvas Width = " + cWidth);
+		console.log("Canvas Height = " + cHeight);
+		size = gCanvas.width;
+		canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 
-		setFOV(20);
+		setFOV(12);
 
 		var img = new Image();
 		img.onload = function() {
@@ -503,23 +502,6 @@
 				window.requestAnimationFrame(renderAnimationFrame);
 			};
 
-			// BAD! uses 100% CPU, stats.js runs at 38FPS
-			/*
-			function renderFrame(){
-			earth.renderFrame(new Date);
-			}
-			setInterval(renderFrame, 0);
-			*/
-			// Better - runs at steady state
-			/*
-			(function loop(){
-			setTimeout(function(){
-			earth.renderFrame(new Date);
-			loop();
-			}, 0);
-			})();
-			*/
-			// Best! only renders frames that will be seen. stats.js runs at 60FPS on my desktop
 			window.requestAnimationFrame(renderAnimationFrame);
 
 		};
@@ -545,6 +527,8 @@
 	var yMovement = 0;
 	var zoom = 0;
 	var FOV = 20;
+	var canWidth = 300;
+	var canHeight = 600;
 	function setEventListeners(canvas) {
 		bubbleCanvas = canvas;
 		bubbleCanvas.addEventListener("mousedown", mouseDownEvent, false);
@@ -556,6 +540,59 @@
 			bubbleCanvas.addEventListener('mousewheel', mouseScrollEvent, false);
 			bubbleCanvas.addEventListener('DOMMouseScroll', mouseScrollEvent, false);
 		}
+		var el = document.getElementById("fullscreen");
+		if (el.addEventListener) {
+			el.addEventListener("click", fullScreenButtonClick, false);
+			console.log(el + " 1");
+
+		} else if (el.attachEvent) {
+			el.attachEvent('onclick', fullScreenButtonClick);
+			console.log(el + " 2");
+		}
+
+	}
+
+	function fullScreenButtonClick() {
+		//alert("Bingo");
+		//console.log("Bingo");
+		
+		if (isFullScreen) {
+			var el = document.getElementById("bubble");
+			el.style.height = "244px";
+			el.style.width = "610px";
+			canWidth = 300;
+			canHeight = 600;
+			//setSmallScreen
+		} else {
+			var el = document.getElementById("bubble");
+			el.style.height = "100%";
+			el.style.width = "100%";
+			canWidth = 500;
+			canHeight = 1000;
+			
+
+			//setFullScreen
+		}
+		isFullScreen = !isFullScreen;
+		reload();
+	}
+
+	function reload() {
+
+		var texture = "bubble_equi.jpg";
+		createSphere(document.getElementById("sphere"), texture);
+
+		var stats = new Stats();
+		// Align top-left
+		stats.getDomElement().style.position = 'relative';
+		stats.getDomElement().style.marginLeft = '-40px';
+		stats.getDomElement().style.left = '50%';
+
+		document.getElementById("fps").appendChild(stats.getDomElement());
+		setInterval(function() {
+			stats.update();
+
+		}, 1000 / 30);
 	}
 
 	function mouseDownEvent(event) {
@@ -571,8 +608,24 @@
 		isUserInteracting = false;
 		eventMouseX = event.clientX;
 		eventMouseY = event.clientY;
+		yRot += yMovement;
+		yRot = YClamp(yRot);
+		//console.log(yRot);
 		xMovement = 0;
 		yMovement = 0;
+	}
+
+	function YClamp(y) {
+
+		var clampVal = (bubbleCanvas.height * bubbleCanvas.width) / 500;
+		//console.log(clampVal);
+		if (y > clampVal)
+			y = clampVal;
+
+		if (y < -clampVal)
+			y = -clampVal;
+
+		return y;
 	}
 
 	function mouseOutEvent(event) {
@@ -612,7 +665,6 @@
 			else if (event.detail < 0 && FOV > 33)
 				setFOV(20);
 		}
-
 	}
 
 }).call(this);
