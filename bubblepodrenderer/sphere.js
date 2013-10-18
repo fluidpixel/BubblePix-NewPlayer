@@ -470,7 +470,6 @@
 		gCtx = gCanvas.getContext("2d");
 		var bbl = document.getElementById("bubble");
 
-		
 		/*
 		 if (canWidth > 2048) {
 		 var canAspect = canWidth / canHeight;
@@ -555,21 +554,31 @@
 	function fullScreenButtonClick() {
 		//alert("Bingo");
 		//console.log("Bingo");
-		
+
 		if (isFullScreen) {
 			var el = document.getElementById("bubble");
 			el.style.height = "244px";
 			el.style.width = "610px";
-			canWidth = 300;
-			canHeight = 600;
+			canWidth = 200;
+			canHeight = 400;
 			//setSmallScreen
 		} else {
 			var el = document.getElementById("bubble");
+			if (el.requestFullscreen) {
+			  el.requestFullscreen();
+			} else if (el.mozRequestFullScreen) {
+			  el.mozRequestFullScreen();
+			} else if (el.webkitRequestFullscreen) {
+			  el.webkitRequestFullscreen();
+			}
 			el.style.height = "100%";
-			el.style.width = "100%";
-			canWidth = 500;
-			canHeight = 1000;
+			el.style.width = "100%"; 
 			
+			var multiplier = (el.offsetWidth * el.offsetHeight) / (610 * 244);
+			multiplier/=2;
+			canWidth = canWidth * multiplier;
+
+			canHeight = canHeight * multiplier;
 
 			//setFullScreen
 		}
