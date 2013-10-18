@@ -11,7 +11,7 @@
 			function go() {
 
 				var texture = "bubble_equi.jpg";
-				createSphere(document.getElementById("sphere"), texture);
+				createSphere(document.getElementById("sphere"), texture, true);
 
 				var stats = new Stats();
 				// Align top-left
@@ -23,7 +23,7 @@
 				setInterval(function() {
 					stats.update();
 
-				}, 1000 / 200);
+				}, 1000 / 30);
 
 			}
 

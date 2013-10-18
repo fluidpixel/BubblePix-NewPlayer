@@ -400,7 +400,7 @@
 	};
 
 	function copyImageToBuffer(aImg) {
-
+		originalImage = aImg;
 		if (aImg.naturalWidth / aImg.naturalHeight < 2 && aImg.naturalHeight / aImg.naturalWidth < 2) {
 			isBubblePixImage = true;
 		}
@@ -464,7 +464,7 @@
 	}
 
 
-	this.createSphere = function(gCanvas, textureUrl) {
+	this.createSphere = function(gCanvas, textureUrl, reloadTexture) {
 		//size = Math.max(gCanvas.width, gCanvas.height);
 
 		gCtx = gCanvas.getContext("2d");
@@ -487,13 +487,28 @@
 		console.log("Canvas Width = " + cWidth);
 		console.log("Canvas Height = " + cHeight);
 		size = gCanvas.width;
-		canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 
+		var img;
 		setFOV(12);
+		if (reloadTexture) {
+			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
+			img = new Image();
+			img.onload = function() {
+				copyImageToBuffer(img);
+				var earth = sphere();
+				var renderAnimationFrame = function(/* time */time) {
+					/* time ~= +new Date // the unix time */
+					earth.renderFrame(time);
+					window.requestAnimationFrame(renderAnimationFrame);
+				};
 
-		var img = new Image();
-		img.onload = function() {
-			copyImageToBuffer(img);
+				window.requestAnimationFrame(renderAnimationFrame);
+
+			};
+			img.setAttribute("src", textureUrl);
+		} else {
+			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
+			copyImageToBuffer(originalImage);
 			var earth = sphere();
 			var renderAnimationFrame = function(/* time */time) {
 				/* time ~= +new Date // the unix time */
@@ -502,9 +517,7 @@
 			};
 
 			window.requestAnimationFrame(renderAnimationFrame);
-
-		};
-		img.setAttribute("src", textureUrl);
+		}
 	};
 
 	/////bubble interaction
@@ -526,14 +539,19 @@
 	var yMovement = 0;
 	var zoom = 0;
 	var FOV = 20;
-	var canWidth = 300;
-	var canHeight = 600;
+	var canWidth = 100;
+	var canHeight = 200;
+	var originalImage;
 	function setEventListeners(canvas) {
 		bubbleCanvas = canvas;
 		bubbleCanvas.addEventListener("mousedown", mouseDownEvent, false);
 		bubbleCanvas.addEventListener("mouseup", mouseUpEvent, false);
 		bubbleCanvas.addEventListener("mousemove", mouseMoveEvent, false);
 		bubbleCanvas.addEventListener("mouseout", mouseOutEvent, false);
+		bubbleCanvas.addEventListener("touchstart", mouseDownEvent, false);
+		bubbleCanvas.addEventListener("touchend", mouseUpEvent, false);
+		bubbleCanvas.addEventListener("touchmove", mouseMoveEvent, false);
+		//bubbleCanvas.addEventListener("mouseout", mouseOutEvent, false);
 		document.addEventListener("mouseup", mouseUpEvent, false);
 		if (!isBubblePixImage) {
 			bubbleCanvas.addEventListener('mousewheel', mouseScrollEvent, false);
@@ -557,29 +575,38 @@
 
 		if (isFullScreen) {
 			var el = document.getElementById("bubble");
+			if (document.exitFullscreen) {
+				document.exitFullscreen();
+			} else if (document.mozCancelFullScreen) {
+				document.mozCancelFullScreen();
+			} else if (document.webkitCancelFullScreen) {
+				document.webkitCancelFullScreen();
+			}
 			el.style.height = "244px";
 			el.style.width = "610px";
-			canWidth = 200;
-			canHeight = 400;
+			canWidth = 100;
+			canHeight = 200;
+
 			//setSmallScreen
 		} else {
 			var el = document.getElementById("bubble");
-			if (el.requestFullscreen) {
-			  el.requestFullscreen();
+			if (el.requestFullScreen) {
+				el.requestFullScreen();
 			} else if (el.mozRequestFullScreen) {
-			  el.mozRequestFullScreen();
-			} else if (el.webkitRequestFullscreen) {
-			  el.webkitRequestFullscreen();
+				el.mozRequestFullScreen();
+			} else if (el.webkitRequestFullScreen) {
+				el.webkitRequestFullScreen();
 			}
 			el.style.height = "100%";
-			el.style.width = "100%"; 
-			
+			el.style.width = "100%";
+
 			var multiplier = (el.offsetWidth * el.offsetHeight) / (610 * 244);
-			multiplier/=2;
-			canWidth = canWidth * multiplier;
-
-			canHeight = canHeight * multiplier;
-
+			multiplier /= 2;
+			//canWidth = canWidth * multiplier;
+			canWidth = 300;
+			canHeight = 600;
+			//canHeight = canHeight * multiplier;
+			//
 			//setFullScreen
 		}
 		isFullScreen = !isFullScreen;
@@ -587,21 +614,8 @@
 	}
 
 	function reload() {
+		createSphere(document.getElementById("sphere"), "", false);
 
-		var texture = "bubble_equi.jpg";
-		createSphere(document.getElementById("sphere"), texture);
-
-		var stats = new Stats();
-		// Align top-left
-		stats.getDomElement().style.position = 'relative';
-		stats.getDomElement().style.marginLeft = '-40px';
-		stats.getDomElement().style.left = '50%';
-
-		document.getElementById("fps").appendChild(stats.getDomElement());
-		setInterval(function() {
-			stats.update();
-
-		}, 1000 / 30);
 	}
 
 	function mouseDownEvent(event) {
