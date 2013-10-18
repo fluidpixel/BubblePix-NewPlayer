@@ -669,9 +669,7 @@
             function onDocumentMouseMove( event ) {
 
                     eventMouseX = event.clientX;
-                    eventMouseY = event.clientY;
-
-                
+                    eventMouseY = event.clientY;                
             }
 
             function onDocumentMouseUp( event ) {

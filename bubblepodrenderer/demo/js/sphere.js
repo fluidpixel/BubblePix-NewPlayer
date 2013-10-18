@@ -539,8 +539,9 @@
 	var yMovement = 0;
 	var zoom = 0;
 	var FOV = 20;
-	var canWidth = 100;
-	var canHeight = 200;
+	var originalCanWidth = 200;
+	var canWidth = originalCanWidth;
+	var canHeight = originalCanWidth * 2;
 	var originalImage;
 	function setEventListeners(canvas) {
 		bubbleCanvas = canvas;
@@ -575,6 +576,11 @@
 
 		if (isFullScreen) {
 			var el = document.getElementById("bubble");
+
+			el.style.height = "244px";
+			el.style.width = "610px";
+			canWidth = originalCanWidth;
+			canHeight = originalCanWidth * 2;
 			if (document.exitFullscreen) {
 				document.exitFullscreen();
 			} else if (document.mozCancelFullScreen) {
@@ -582,11 +588,6 @@
 			} else if (document.webkitCancelFullScreen) {
 				document.webkitCancelFullScreen();
 			}
-			el.style.height = "244px";
-			el.style.width = "610px";
-			canWidth = 100;
-			canHeight = 200;
-
 			//setSmallScreen
 		} else {
 			var el = document.getElementById("bubble");
@@ -603,8 +604,8 @@
 			var multiplier = (el.offsetWidth * el.offsetHeight) / (610 * 244);
 			multiplier /= 2;
 			//canWidth = canWidth * multiplier;
-			canWidth = 300;
-			canHeight = 600;
+			canWidth *= 2;
+			canHeight = canWidth * 2;
 			//canHeight = canHeight * multiplier;
 			//
 			//setFullScreen
