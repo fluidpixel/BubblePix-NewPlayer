@@ -17,9 +17,9 @@
 (function() {"use strict";
 
 	var opts = {
-		tilt : 10,
-		turn : 20,
-		fpr : 128
+		tilt : 0,
+		turn : 0,
+		fpr : 1
 	};
 
 	// frame count, current angle of rotation. inc/dec to turn.
@@ -32,7 +32,7 @@
 	var canvasImageData, textureImageData;
 
 	// Number of frames for one complete rotation.
-	var fpr = 800;
+	var fpr = 8;
 
 	// Constants for indexing dimentions
 	var X = 0, Y = 1, Z = 2;
@@ -47,7 +47,7 @@
 	var vs = 1;
 	// Vertical scale of viewing area
 	var xRot = 0.0001;
-	var yRot = 1;
+	var yRot = 0;
 	// NB    The viewing area is an abstract rectangle in the 3d world and is not
 	//    the same as the canvas used to display the image.
 
@@ -261,20 +261,10 @@
 			// coresponds to on the texture
 			if (!isBubblePixImage) {
 				var lh = textureWidth + textureWidth * (Math.atan2(L[Y], L[X]) + Math.PI ) / (2 * Math.PI);
-				// %textureHeight at end to get rid of south pole bug. probaly means that one
-				// pixel may be a color from the opposite pole but as long as the
-				// poles are the same color this won't be noticed.
 				var lv = textureWidth * Math.floor(textureHeight - 1 - (textureHeight * (Math.acos(L[Z] / r) / Math.PI) % textureHeight));
+
 			} else {
 
-				var lh = 0.75 * sry;
-				var lv = crz;
-				lh *= V[Z];
-				lv *= V[Z];
-				lh *= 10;
-				lv *= 10;
-				lh += 0.5;
-				lv += 0.5;
 			}
 
 			return {
@@ -313,8 +303,8 @@
 			var cache = new Array(cWidth * cHeight);
 			return function(pixel) {
 				if (cache[pixel] === undefined) {
-					var v = Math.floor(pixel / size);
-					var h = pixel - v * size;
+					var v = Math.floor(pixel / cWidth);
+					var h = pixel - v * cWidth;
 					cache[pixel] = calculateVector(h, v);
 				}
 				return cache[pixel];
@@ -372,7 +362,15 @@
 						//rotate texture on sphere
 
 						var lh = Math.floor(vector.lh + xRot + xMovement) % textureWidth;
-						var lv = (vector.lv + (textureHeight * yMovement));
+						var yRotVal = yMovement + yRot;
+
+						if (yRotVal > bubbleCanvas.height / 4)
+							yRotVal = bubbleCanvas.height / 4;
+
+						if (yRotVal < -bubbleCanvas.height / 4)
+							yRotVal = -bubbleCanvas.height / 4;
+						var lv = (vector.lv + (textureHeight * (yRotVal)));
+
 						xRot += xMovement;
 
 						/*           lh = (lh < 0)
@@ -466,7 +464,7 @@
 		RZ = (180 - rz);
 		vs = fov;
 		hs = vs * aspect;
-		hs *= 1.25;
+		//hs *= 1.25;
 		hhs = 0.5 * hs;
 		hvs = 0.5 * vs;
 		hs_ch = (hs / cWidth);
@@ -492,7 +490,7 @@
 		cHeight = gCanvas.height;
 		cWidth = gCanvas.width;
 
-		setFOV(20);
+		setFOV(18);
 
 		var img = new Image();
 		img.onload = function() {
@@ -572,6 +570,13 @@
 		isUserInteracting = false;
 		eventMouseX = event.clientX;
 		eventMouseY = event.clientY;
+		yRot += yMovement;
+		if (yRot > bubbleCanvas.height / 4)
+			yRot = bubbleCanvas.height / 4;
+
+		if (yRot < -bubbleCanvas.height / 4)
+			yRot = -bubbleCanvas.height / 4;
+		console.log(yRot);
 		xMovement = 0;
 		yMovement = 0;
 	}
@@ -613,7 +618,6 @@
 			else if (event.detail < 0 && FOV > 33)
 				setFOV(20);
 		}
-
 	}
 
 }).call(this);
