@@ -10,7 +10,7 @@
 		<script>
 			function go() {
 
-				var texture = "bubble_equi.jpg";
+				var texture = "15.jpg";
 				createSphere(document.getElementById("sphere"), texture, true);
 
 				var stats = new Stats();
@@ -22,11 +22,8 @@
 				document.getElementById("fps").appendChild(stats.getDomElement());
 				setInterval(function() {
 					stats.update();
-
-				}, 1000 / 120);
-
+				}, 1000 / 300);
 			}
-
 		</script>
 	</head>
 	<body onload="go()" >
