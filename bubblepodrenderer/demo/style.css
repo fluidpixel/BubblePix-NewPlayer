@@ -6,6 +6,12 @@ body {
 	margin: 0;
 	padding: 0;
 	color: lightgrey;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
 #outer {
@@ -15,6 +21,7 @@ body {
 	position: absolute;
 	overflow: hidden;
 	text-align: center;
+	
 }
 
 #bubble {
@@ -24,6 +31,8 @@ body {
 	height:244px;
 	margin: 0 auto;
 	position:relative;
+	cursor: move;
+
 }
 a {
 	color: white;
@@ -34,6 +43,7 @@ a {
 	height: 100%;
 	position:relative;
 	z-index: 0;
+	user-select: none;
 }
 
 #ui{
@@ -60,6 +70,7 @@ a {
 	right:5px;
 	bottom:5px;
 	pointer-events:all;
+	cursor: pointer;
 }
 
 #fullscreen img{
