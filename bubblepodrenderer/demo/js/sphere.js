@@ -367,51 +367,32 @@
 				// add to 24*60*60 so it will be a day before turnBy is negative and it hits the slow negative modulo bug
 				var turnBy = 24 * 60 * 60 + firstFramePos - time * posDelta;
 				var pixel = cWidth * cHeight;
-
+				console.log(yRot + " " + yRotVal);
+				yRotVal = YClamp(yRotVal);
 				while (pixel--) {
 
 					var vector = getVector(pixel);
 					if (vector !== null) {
 						//rotate texture on sphere
 
-						var lh = Math.floor(vector.lh + xRot + xMovement) % textureWidth;
-						var yRotVal = yMovement + yRot;
+						var lh = Math.floor(vector.lh + xRot) % textureWidth;
 
-						yRotVal = YClamp(yRotVal);
+						//YClamp(yRotVal);
+
 						var lv = (vector.lv + (textureHeight * (yRotVal)));
 						//yMovement = 0;
-						xRot += xMovement;
 
-						/*           lh = (lh < 0)
-						 ? ((textureWidth-1) - ((lh-1)%textureWidth))
-						 : (lh % textureWidth) ;
-						 */
+						xRot += xMovement;
 
 						var idxC = pixel * 4;
 
 						var idxT = (lh + lv) * 4;
-
-						/* TODO light for alpha channel or alter s or l in hsl color value?
-						- fn to calc distance between two points on sphere?
-						- attenuate light by distance from point and rotate point separate from texture rotation
-						*/
-
-						// Update the values of the pixel;
 
 						canvasData[idxC + 0] = textureData[idxT + 0];
 						canvasData[idxC + 1] = textureData[idxT + 1];
 						canvasData[idxC + 2] = textureData[idxT + 2];
 						canvasData[idxC + 3] = 255;
 
-						/*
-						if (canvasData[idxC + 0] == 0 && canvasData[idxC + 1] == 0 && canvasData[idxC + 2] == 0) {
-						canvasData[idxC + 0] = 0;
-						canvasData[idxC + 1] = 255;
-						canvasData[idxC + 2] = 255;
-						}*/
-
-						// Faster?
-						//copyFnc(idxC, idxT);
 					}
 				}
 				gCtx.putImageData(canvasImageData, 0, 0);
@@ -433,6 +414,7 @@
 		var pixelAmount = 0;
 		var angleOffsetRadians = Math.PI;
 		var fullHeight = width / (2 * Math.PI );
+		textureClampHeight = fullHeight;
 		var replacePixel = Math.floor((height * width) / 2 - (fullHeight * width ) / 2);
 		replacePixel *= 4;
 		var texImageData = imageData.data;
@@ -471,12 +453,6 @@
 				buf.push(yPix);
 				buf.push(zPix);
 
-				/*
-				 texImageData[pixel] = 0;
-				 texImageData[pixel + 1] = 0;
-				 texImageData[pixel + 2] = 0;
-				 texImageData[pixel + 3] = 255;*/
-
 				pixelAmount++;
 			}
 		}
@@ -498,8 +474,8 @@
 					bufIndex -= 3;
 				}
 			}
-
 		}
+		buf = null;
 		return imageData;
 	}
 
@@ -745,28 +721,14 @@
 	var yaya = 0;
 	function YClamp(y) {
 
-		var clampVal = (bubbleCanvas.height * bubbleCanvas.width) / 1000;
-		;
-		//console.log(clampVal);
-
-		/*
-		 if (yaya == 60) {
-		 console.log(y + " " + clampVal);
-		 yaya = 0;
-		 } else {
-		 yaya++;
-		 }*/
-
-		if (y > clampVal) {
-			y = clampVal;
-			console.log(y + " " + clampVal);
+		
+		if (y > textureClampHeight / 4) {
+			y = textureClampHeight / 4;
+		} else if (y < -textureClampHeight / 4) {
+			y = -textureClampHeight / 4;
 		}
 
-		if (y < -clampVal) {
-			y = -clampVal;
-			console.log(y + " " + clampVal);
-		}
-		return y;
+		return Math.floor(y);
 	}
 
 	function mouseOutEvent(event) {
@@ -775,12 +737,14 @@
 		eventMouseY = event.clientY;
 	}
 
+	var yRotVal = 0;
 	function mouseMoveEvent(event) {
 		if (isUserInteracting) {
 			eventMouseX = event.clientX;
 			eventMouseY = event.clientY;
 			xMovement = (onMouseDownEventX - eventMouseX) / 1000000;
 			yMovement = (onMouseDownEventY - eventMouseY);
+			yRotVal = yMovement + yRot;
 		}
 	}
 
