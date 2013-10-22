@@ -9,10 +9,13 @@
 		<link href="style.css" rel="stylesheet">
 		<script>
 			function go() {
-
-				var texture = "15.jpg";
-				createSphere(document.getElementById("sphere"), texture, true);
-
+							
+				var texture2 = "bubble_equi.jpg";
+				createSphere(document.getElementById("sphere2"), texture2, true, "bubble2");
+				
+				var texture = "bubblepix.jpg";
+				createSphere(document.getElementById("sphere"), texture, true, "bubble");
+				
 				var stats = new Stats();
 				// Align top-left
 				stats.getDomElement().style.position = 'relative';
@@ -39,6 +42,19 @@
 					</div>
 				</div>
 				<canvas id="sphere">
+					Sorry, your browser does not support the canvas element
+				</canvas>
+			</div>
+			<div id="bubble2" >
+				<div id="ui">
+					<div id="logo">
+						<img src="images/logo.png">
+					</div>
+					<div id="fullscreen">
+						<img src="images/fullscreen.png">
+					</div>
+				</div>
+				<canvas id="sphere2">
 					Sorry, your browser does not support the canvas element
 				</canvas>
 			</div>

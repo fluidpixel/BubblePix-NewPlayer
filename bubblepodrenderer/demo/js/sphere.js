@@ -30,7 +30,7 @@
 
 	};
 	var renderAnimationFrame;
-	var earth;
+	var earth = new Array();
 	var textureData;
 	var canvasData;
 
@@ -44,6 +44,7 @@
 	var size, cWidth, cHeight;
 	var canvasImageData, textureImageData;
 
+	var imgArray = new Array();
 	// Number of frames for one complete rotation.
 	var fpr = 8;
 
@@ -528,7 +529,7 @@
 			textureImageData = gCtxImg.getImageData(0, 0, textureHeight, textureWidth);
 		} else {
 			// mad bubblepix image
-			gImage = document.createElement('canvas');
+			gImage = document.createElement('canvas1');
 			var max = Math.max(aImg.naturalWidth, aImg.naturalHeight);
 			console.log("Texture Width = " + aImg.naturalWidth);
 
@@ -574,11 +575,11 @@
 	}
 
 
-	this.createSphere = function(gCanvas, textureUrl, reloadTexture) {
+	this.createSphere = function(gCanvas, textureUrl, reloadTexture, element) {
 		//size = Math.max(gCanvas.width, gCanvas.height);
-
+		
 		gCtx = gCanvas.getContext("2d");
-		var bbl = document.getElementById("bubble");
+		var bbl = document.getElementById(element);
 		gCanvas.height = canWidth;
 		gCanvas.width = canHeight;
 		setEventListeners(gCanvas);
@@ -590,19 +591,22 @@
 		setFOV(30);
 		if (reloadTexture) {
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
-			img = new Image();
-			img.onload = function() {
-				copyImageToBuffer(img);
-				earth = sphere();
+			//img = new Image();
+			
+			imgArray.push(new Image());
+			
+			imgArray[imgArray.length-1].onload = function() {
+				copyImageToBuffer(imgArray[imgArray.length-1]);
+				earth.push(sphere());
 				renderAnimationFrame = function(/* time */time) {
 					/* time ~= +new Date // the unix time */
-					earth.renderFrame(time);
+					earth[earth.length-1].renderFrame(time);
 					window.requestAnimationFrame(renderAnimationFrame);
 				};
 				window.requestAnimationFrame(renderAnimationFrame);
 			};
-			img.setAttribute("src", textureUrl);
-		} else {
+			imgArray[imgArray.length-1].setAttribute("src", textureUrl);
+		} else if (originalImage){
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			copyImageToBuffer(originalImage);
 			earth = sphere();
@@ -618,8 +622,7 @@
 	};
 
 	/////bubble interaction
-	var
-	bubbleCanvas;
+	var bubbleCanvas;
 	var isUserInteracting = false;
 	var isLeftInteracting = false;
 	var isRightInteracting = false;
