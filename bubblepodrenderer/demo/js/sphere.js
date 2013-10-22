@@ -27,7 +27,6 @@
 		vPerp : 0.5,
 		minDiam : 0.25,
 		maxDiam : 0.65
-
 	};
 	var renderAnimationFrame;
 	var earth;
@@ -296,7 +295,8 @@
 	var sphere = function() {
 
 		textureData = textureImageData.data;
-		canvasData = canvasImageData.data; copyFnc;
+		canvasData = canvasImageData.data;
+		copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -379,7 +379,7 @@
 
 						yRotVal = YClamp(yRotVal);
 						var lv = (vector.lv + (textureHeight * (yRotVal)));
-
+						//yMovement = 0;
 						xRot += xMovement;
 
 						/*           lh = (lh < 0)
@@ -471,11 +471,6 @@
 				buf.push(yPix);
 				buf.push(zPix);
 
-				texImageData[pixel] = 1;
-				texImageData[pixel + 1] = 0;
-				texImageData[pixel + 2] = 0;
-				texImageData[pixel + 3] = 255;
-
 				/*
 				 texImageData[pixel] = 0;
 				 texImageData[pixel + 1] = 0;
@@ -490,11 +485,11 @@
 		for (var i = 0; i < height * width * 4; i += 4) {
 			if (i != replacePixel) {
 				texImageData[i] = 0;
-				texImageData[i + 1] = 255;
+				texImageData[i + 1] = 0;
 				texImageData[i + 2] = 0;
 				texImageData[i + 3] = 255;
 			} else {
-				if (bufIndex >0) {
+				if (bufIndex > 0) {
 					texImageData[i] = buf[bufIndex - 2];
 					texImageData[i + 1] = buf[bufIndex - 1];
 					texImageData[i + 2] = buf[bufIndex];
@@ -517,6 +512,7 @@
 
 			gImage = document.createElement('canvas');
 			textureWidth = aImg.naturalWidth;
+			textureClampHeight = aImg.naturalHeight;
 			console.log("Texture Width = " + aImg.naturalWidth);
 			textureHeight = aImg.naturalWidth;
 			console.log("Texture height = " + aImg.naturalHeight);
@@ -531,7 +527,7 @@
 			gImage = document.createElement('canvas');
 			var max = Math.max(aImg.naturalWidth, aImg.naturalHeight);
 			console.log("Texture Width = " + aImg.naturalWidth);
-
+			textureClampHeight = aImg.naturalHeight;
 			console.log("Texture height = " + aImg.naturalHeight);
 			textureWidth = max;
 			textureHeight = max;
@@ -587,7 +583,7 @@
 		size = gCanvas.width;
 
 		var img;
-		setFOV(30);
+		setFOV(FOV);
 		if (reloadTexture) {
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			img = new Image();
@@ -620,6 +616,7 @@
 	/////bubble interaction
 	var
 	bubbleCanvas;
+	var textureClampHeight;
 	var isUserInteracting = false;
 	var isLeftInteracting = false;
 	var isRightInteracting = false;
@@ -711,11 +708,8 @@
 	}
 
 	function reload() {
-		//sphere =  null;
 		textureData = null;
 		canvasData = null;
-		//copyFnc = null;
-
 		gCtx = null;
 		canvasImageData = null;
 		gCtxImg = null;
@@ -726,10 +720,7 @@
 		bubbleCanvas = null;
 		renderAnimationFrame = null;
 		earth = null;
-		//el = null;
-		//sleep(6);
 		createSphere(document.getElementById("sphere"), "", false);
-
 	}
 
 	function mouseDownEvent(event) {
@@ -751,16 +742,30 @@
 		yMovement = 0;
 	}
 
+	var yaya = 0;
 	function YClamp(y) {
 
-		var clampVal = (bubbleCanvas.height * bubbleCanvas.width) / 500;
+		var clampVal = (bubbleCanvas.height * bubbleCanvas.width) / 1000;
+		;
 		//console.log(clampVal);
-		if (y > clampVal)
+
+		/*
+		 if (yaya == 60) {
+		 console.log(y + " " + clampVal);
+		 yaya = 0;
+		 } else {
+		 yaya++;
+		 }*/
+
+		if (y > clampVal) {
 			y = clampVal;
+			console.log(y + " " + clampVal);
+		}
 
-		if (y < -clampVal)
+		if (y < -clampVal) {
 			y = -clampVal;
-
+			console.log(y + " " + clampVal);
+		}
 		return y;
 	}
 
