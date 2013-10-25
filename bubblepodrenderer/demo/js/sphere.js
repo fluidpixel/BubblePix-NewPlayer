@@ -587,6 +587,28 @@
 	var bcv;
 	var bcWidth;
 	var bcHeight;
+
+	this.init = function(isEqui, textureUrl, textureXMLUrl) {
+		//Set parameters functions for EITHER unwrapped(bubblepix) image (A), or Equi Parameters (B) for Equirectangular images
+		//Must be set before createSphere is called
+
+		//A: setUnwrappedParameters (uPerpendicular, vPerpendicular, minDiameter, maxDiameter, fov, canvasWidth)
+		//B: setEquiParameters(FOV,canvasWidth);
+		var isVideo = false;
+		var vidIdentifier = ".mp4";
+		if (textureUrl.indexOf(vidIdentifier) !== -1)
+			isVideo = true;
+		isUnWrappedImage = !isEqui;
+		if (isUnWrappedImage) {
+			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 20, 700, isVideo);
+		} else {
+			setEquiParameters(20, 400);
+		}
+		//setEquiParameters(20, 400);
+		//create sphere with texture
+		createSphere(document.getElementById("sphere"), textureUrl, true, textureXMLUrl);
+
+	};
 	this.createSphere = function(gCanvas, textureUrl, reloadTexture, xmlURL) {
 		gCtx = gCanvas.getContext("2d");
 		var bbl = document.getElementById("bubble");
