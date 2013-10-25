@@ -367,7 +367,6 @@
 				// add to 24*60*60 so it will be a day before turnBy is negative and it hits the slow negative modulo bug
 				var turnBy = 24 * 60 * 60 + firstFramePos - time * posDelta;
 				var pixel = cWidth * cHeight;
-				console.log(yRot + " " + yRotVal);
 				yRotVal = YClamp(yRotVal);
 				while (pixel--) {
 
@@ -546,11 +545,11 @@
 	}
 
 
-	this.createSphere = function(gCanvas, textureUrl, reloadTexture) {
+	this.createBubble = function(gCanvas, textureUrl, reloadTexture, element) {
 		//size = Math.max(gCanvas.width, gCanvas.height);
 
 		gCtx = gCanvas.getContext("2d");
-		var bbl = document.getElementById("bubble");
+		var bbl = document.getElementById(element);
 		gCanvas.height = canWidth;
 		gCanvas.width = canHeight;
 		setEventListeners(gCanvas);
@@ -646,7 +645,7 @@
 		//console.log("Bingo");
 
 		if (isFullScreen) {
-			var el = document.getElementById("bubble");
+			var el = document.getElementById("bubbleViewer");
 			el.style.height = "244px";
 			el.style.width = "610px";
 			canWidth = originalCanWidth;
@@ -661,7 +660,7 @@
 			el = null;
 			//setSmallScreen
 		} else {
-			var el = document.getElementById("bubble");
+			var el = document.getElementById("bubbleViewer");
 			if (el.requestFullScreen) {
 				el.requestFullScreen();
 			} else if (el.mozRequestFullScreen) {
@@ -696,7 +695,7 @@
 		bubbleCanvas = null;
 		renderAnimationFrame = null;
 		earth = null;
-		createSphere(document.getElementById("sphere"), "", false);
+		createBubble(document.getElementById("bubble"), "", false);
 	}
 
 	function mouseDownEvent(event) {
