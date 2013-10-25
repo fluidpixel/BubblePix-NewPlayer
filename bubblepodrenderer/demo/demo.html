@@ -9,12 +9,21 @@
 		<link href="style.css" rel="stylesheet">
 		<script>
 			function go() {
-
 				var texture = "PanoOutput.png";
-				createSphere(document.getElementById("sphere"), texture, true);
+
+				//Set parameters functions for EITHER unwrapped(bubblepix) image (A), or Equi Parameters (B) for Equirectangular images
+				//Must be set before createSphere is called
+
+				//A: setUnwrappedParameters (uPerpendicular, vPerpendicular, minDiameter, maxDiameter, fov, canvasWidth)
+				//B: setEquiParameters(FOV,canvasWidth);
+
+				var isVideo = false;
+				//setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 20, 200, isVideo);
+				setEquiParameters(20, 400);
+				//create sphere with texture
+				createSphere(document.getElementById("sphere"), texture, true, "https://bubblepix.com/bubbl3xml.xml?settings=0.7683824,0.5739152,0.491784,0.525,0.507394,photo");
 
 				var stats = new Stats();
-				// Align top-left
 				stats.getDomElement().style.position = 'relative';
 				stats.getDomElement().style.marginLeft = '-40px';
 				stats.getDomElement().style.left = '50%';
@@ -22,7 +31,7 @@
 				document.getElementById("fps").appendChild(stats.getDomElement());
 				setInterval(function() {
 					stats.update();
-				}, 1000 / 100);
+				}, 1000 / 300);
 			}
 		</script>
 	</head>
@@ -31,7 +40,7 @@
 			<h3>BubblePod</h3>
 			<div id="bubble" >
 				<div id="ui">
-					<div id="logo">
+					<div Did="logo">
 						<img src="images/logo.png">
 					</div>
 					<div id="fullscreen">
@@ -39,6 +48,16 @@
 					</div>
 				</div>
 				<canvas id="sphere">
+					<canvas id="backCanvas" height = "200" width = "400" >
+
+						<video controls autoplay  id = "video" >
+							<source src="vwd.mp4" type="video/mp4" >
+
+							Your browser does not support the video tag.
+						</video>
+						Sorry, your browser does not support the canvas element
+
+					</canvas>
 					Sorry, your browser does not support the canvas element
 				</canvas>
 			</div>
