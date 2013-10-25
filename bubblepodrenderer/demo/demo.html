@@ -9,9 +9,11 @@
 		<link href="style.css" rel="stylesheet">
 		<script>
 			function go() {
-				var texture = "vid.mp4";
-
-				init(false, texture, "https://bubblepix.com/bubbl3xml.xml?settings=0.7683824,0.5739152,0.491784,0.525,0.507394,photo");
+				var textureUrl = "bubble_equi.jpg";
+				var textureXml = "https://bubblepix.com/bubbl3xml.xml?settings=0.7683824,0.5739152,0.491784,0.525,0.507394,photo";
+				var isEqui = true;
+				
+				init(isEqui, textureUrl, textureXml);
 				
 				var stats = new Stats();
 				stats.getDomElement().style.position = 'relative';

@@ -301,7 +301,8 @@
 	var sphere = function(reuse) {
 
 		//textureData = textureImageData.data;
-		canvasData = canvasImageData.data; copyFnc;
+		canvasData = canvasImageData.data;
+		copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -581,6 +582,7 @@
 		b2 = Math.pow(b, 2);
 	}
 
+	//video/img/ and false canvas context
 	var img;
 	var video;
 	var backcvs;
@@ -599,8 +601,10 @@
 		if (textureUrl.indexOf(vidIdentifier) !== -1)
 			isVideo = true;
 		isUnWrappedImage = !isEqui;
+
+		//these will be overwritten if there is xml data)
 		if (isUnWrappedImage) {
-			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 20, 700, isVideo);
+			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 20, 300, isVideo);
 		} else {
 			setEquiParameters(20, 400);
 		}
@@ -623,10 +627,12 @@
 		hs_ch = ((hs) / cWidth);
 		vs_cv = ((vs) / (cHeight));
 
-		//var xmlData = loadXML(xmlURL);
-		//parseXML(xmlData);
-		//console.log(xmlData);
-		//covertToWebPlayerParams()
+		var xmlData = loadXML(xmlURL);
+		if (xmlData) {
+			parseXML(xmlData);
+			console.log(xmlData);
+
+		}
 		setFOV(FOV);
 		console.log("canHeight: " + cHeight);
 		console.log("canWidth: " + cWidth);
@@ -660,6 +666,7 @@
 			window.requestAnimationFrame(renderAnimationFrame);
 
 		} else if (!reloadTexture && isUnWrappedVideo) {
+			video.load();
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			copyImageToBuffer(originalImage);
 			earth = sphere(false);
@@ -700,9 +707,15 @@
 
 		xhttp.open("GET", xml, false);
 		console.log("sending");
-		xhttp.send(null);
+		try {
+			xhttp.send(null);
+			return xhttp.responseText;
+		} catch(e) {
+			alert("XML request failed");
+			return false;
+		}
 		console.log("sent");
-		return xhttp.responseText;
+
 	}
 
 	//bubble interaction specific variables
@@ -889,7 +902,7 @@
 		canWidth = canvasWidth;
 		canHeight = canWidth * 2;
 		//console.log("Set Unwrapped Parameters");
-		isUnWrappedImage = true;
+
 		isUnWrappedVideo = isVideo;
 	};
 
@@ -898,15 +911,20 @@
 		originalCanWidth = canvasWidth;
 		canWidth = canvasWidth;
 		canHeight = canWidth * 2;
-		isUnWrappedImage = false;
 	};
 
 	function parseXML(xml) {
-		xml_details.cX = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
-		xml_details.cY = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
-		xml_details.innerCircle = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('inner_circle'));
-		xml_details.width = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
-		xml_details.height = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
+		if (isUnWrappedImage) {
+			xml_details.cX = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
+			xml_details.cY = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
+			xml_details.innerCircle = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('inner_circle'));
+			xml_details.width = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
+			xml_details.height = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
+		}
+		else
+		{
+			
+		}
 	}
 
 }).call(this);
