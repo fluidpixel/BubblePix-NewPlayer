@@ -9,9 +9,9 @@
 		<link href="style.css" rel="stylesheet">
 		<script>
 			function go() {
-				var texture = "PanoOutput.png";
+				var texture = "vid.mp4";
 
-				init(true, texture, "https://bubblepix.com/bubbl3xml.xml?settings=0.7683824,0.5739152,0.491784,0.525,0.507394,photo");
+				init(false, texture, "https://bubblepix.com/bubbl3xml.xml?settings=0.7683824,0.5739152,0.491784,0.525,0.507394,photo");
 				
 				var stats = new Stats();
 				stats.getDomElement().style.position = 'relative';
@@ -41,7 +41,7 @@
 					<canvas id="backCanvas" height = "800" width = "1200" >
 
 						<video controls autoplay  id = "video" >
-							<source src="vwd.mp4" type="video/mp4" >
+							<source src="" type="video/mp4" >
 
 							Your browser does not support the video tag.
 						</video>

@@ -644,8 +644,12 @@
 			};
 			img.setAttribute("src", textureUrl);
 		} else if (reloadTexture && isUnWrappedVideo) {
+
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
-			video = document.getElementById('video');
+			video = document.getElementsByTagName('video')[0];
+			var sources = video.getElementsByTagName('source');
+			sources[0].src = textureUrl;
+			video.load();
 			backcvs = document.getElementById('backCanvas');
 			copyImageToBuffer(video);
 			earth = sphere(false);
