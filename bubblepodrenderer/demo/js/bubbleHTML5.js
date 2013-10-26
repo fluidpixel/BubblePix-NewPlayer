@@ -376,10 +376,7 @@
 				// add to 24*60*60 so it will be a day before turnBy is negative and it hits the slow negative modulo bug
 				var turnBy = 24 * 60 * 60 + firstFramePos - time * posDelta;
 				var pixel = cWidth * cHeight;
-<<<<<<< HEAD:bubblepodrenderer/demo/js/bubbleHTML5.js
-=======
 
->>>>>>> 4e486930a739b1af8d1898d739b2f3009690e162:bubblepodrenderer/demo/js/sphere.js
 				yRotVal = YClamp(yRotVal);
 				//console.log("Pixels : " + pixel);
 				var index = 0;
@@ -585,24 +582,7 @@
 		b2 = Math.pow(b, 2);
 	}
 
-<<<<<<< HEAD:bubblepodrenderer/demo/js/bubbleHTML5.js
-<<<<<<< HEAD:bubblepodrenderer/demo/js/bubbleHTML5.js
-
-	this.createBubble = function(gCanvas, textureUrl, reloadTexture, element) {
-		//size = Math.max(gCanvas.width, gCanvas.height);
-
-=======
-=======
-	//video/img/ and false canvas context
->>>>>>> 56cf216b4e0cc3a9c3307751c78b799463b0f751:bubblepodrenderer/demo/js/sphere.js
-	var img;
-	var video;
-	var backcvs;
-	var bcv;
-	var bcWidth;
-	var bcHeight;
-
-	this.init = function(isEqui, textureUrl, textureXMLUrl) {
+	this.initHTML5 = function(isEqui, textureUrl, textureXMLUrl) {
 		//Set parameters functions for EITHER unwrapped(bubblepix) image (A), or Equi Parameters (B) for Equirectangular images
 		//Must be set before createSphere is called
 
@@ -622,13 +602,20 @@
 		}
 		//setEquiParameters(20, 400);
 		//create sphere with texture
-		createSphere(document.getElementById("sphere"), textureUrl, true, textureXMLUrl);
+		createBubble(document.getElementById("bubble"), textureUrl, true, textureXMLUrl);
 
 	};
-	this.createSphere = function(gCanvas, textureUrl, reloadTexture, xmlURL) {
->>>>>>> 4e486930a739b1af8d1898d739b2f3009690e162:bubblepodrenderer/demo/js/sphere.js
+	this.createBubble = function(gCanvas, textureUrl, reloadTexture, xmlURL) {
+		
+		var img;
+		var video;
+		var backcvs;
+		var bcv;
+		var bcWidth;
+		var bcHeight;
+		
 		gCtx = gCanvas.getContext("2d");
-		var bbl = document.getElementById(element);
+		var bbl = document.getElementById("bubbleViewer");
 		gCanvas.height = canWidth;
 		gCanvas.width = canHeight;
 		if (reloadTexture) {
@@ -643,15 +630,24 @@
 		var xmlData = loadXML(xmlURL);
 		if (xmlData) {
 			parseXML(xmlData);
-			console.log(xmlData);
+			//console.log(xmlData);
 
 		}
+		
+		var isVideo = false;
+		var vidIdentifier = ".mp4";
+		if (textureUrl.indexOf(vidIdentifier) !== -1)
+			isVideo = true;
+		//this.setUnwrappedParameters = function(uPerpendicular, vPerpendicular, minDiameter, maxDiameter, fov, canvasWidth, isVideo) {
+		setUnwrappedParameters(xml_details.cX, xml_details.cY, xml_details.innerCircle, xml_details.height, FOV, cWidth, isVideo);
+		
 		setFOV(FOV);
 		console.log("canHeight: " + cHeight);
 		console.log("canWidth: " + cWidth);
 		if (reloadTexture && !isUnWrappedVideo) {
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			img = new Image();
+			img.crossOrigin = "Anonymous";
 			img.onload = function() {
 				copyImageToBuffer(img);
 				earth = sphere(false);
@@ -722,7 +718,7 @@
 		console.log("sending");
 		try {
 			xhttp.send(null);
-			return xhttp.responseText;
+			return xhttp.responseXML;
 		} catch(e) {
 			alert("XML request failed");
 			return false;
@@ -784,12 +780,8 @@
 
 	function fullScreenButtonClick() {
 		if (isFullScreen) {
-<<<<<<< HEAD:bubblepodrenderer/demo/js/bubbleHTML5.js
 			var el = document.getElementById("bubbleViewer");
-=======
 
-			var el = document.getElementById("bubble");
->>>>>>> 4e486930a739b1af8d1898d739b2f3009690e162:bubblepodrenderer/demo/js/sphere.js
 			el.style.height = "244px";
 			el.style.width = "610px";
 			canWidth = originalCanWidth;
@@ -803,12 +795,9 @@
 			}
 			el = null;
 		} else {
-<<<<<<< HEAD:bubblepodrenderer/demo/js/bubbleHTML5.js
-			var el = document.getElementById("bubbleViewer");
-=======
 
 			var el = document.getElementById("bubble");
->>>>>>> 4e486930a739b1af8d1898d739b2f3009690e162:bubblepodrenderer/demo/js/sphere.js
+
 			if (el.requestFullScreen) {
 				el.requestFullScreen();
 			} else if (el.mozRequestFullScreen) {
@@ -843,7 +832,7 @@
 		bubbleCanvas = null;
 		img = null;
 		earth = null;
-		createBubble(document.getElementById("bubble"), "", false);
+		createBubble(document.getElementById("bubbleViewer"), "", false);
 	}
 
 	function mouseDownEvent(event) {
@@ -937,7 +926,11 @@
 	function parseXML(xml) {
 		if (isUnWrappedImage) {
 			xml_details.cX = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
+
 			xml_details.cY = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
+			xml_details.cX = 1 - xml_details.cX;
+			//xml_details.cY = 1 - xml_details.cY;
+			
 			xml_details.innerCircle = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('inner_circle'));
 			xml_details.width = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
 			xml_details.height = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
