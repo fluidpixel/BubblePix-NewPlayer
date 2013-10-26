@@ -23,11 +23,21 @@
 	};
 
 	var bubble_details = {
+		//initialization values, should be overwritter by calling function setXXXParameters in demo.html
 		uPerp : 0.5,
 		vPerp : 0.5,
-		minDiam : 0.25,
-		maxDiam : 0.65
+		minDiam : 0.22,
+		maxDiam : 0.62
 	};
+
+	var xml_details = {
+		cX : 0.0,
+		cY : 0.0,
+		width : 0.0,
+		height : 0.0,
+		innerCircle : 0.0
+	};
+
 	var renderAnimationFrame;
 	var earth;
 	var textureData;
@@ -38,7 +48,8 @@
 	var frame_count = 10000;
 	var gCanvas, gCtx;
 	var gImage, gCtxImg;
-	var isBubblePixImage = false;
+	var isUnWrappedImage = false;
+	var isUnWrappedVideo = false;
 	//Variable to hold the size of the canvas
 	var size, cWidth, cHeight;
 	var canvasImageData, textureImageData;
@@ -271,15 +282,9 @@
 
 			// Calculate the position that this location on the sphere
 			// coresponds to on the texture
-			if (!isBubblePixImage) {
-				var lh = textureWidth + textureWidth * (Math.atan2(L[Y], L[X]) + Math.PI ) / (2 * Math.PI);
-				var lv = textureWidth * Math.floor(textureHeight - 1 - (textureHeight * (Math.acos(L[Z] / r) / Math.PI) % textureHeight));
 
-			} else {
-				var lh = textureWidth + textureWidth * (Math.atan2(L[Y], L[X]) + Math.PI ) / (2 * Math.PI);
-				var lv = textureWidth * Math.floor(textureHeight - 1 - (textureHeight * (Math.acos(L[Z] / r) / Math.PI) % textureHeight));
-
-			}
+			var lh = textureWidth + textureWidth * (Math.atan2(L[Y], L[X]) + Math.PI ) / (2 * Math.PI);
+			var lv = textureWidth * Math.floor(textureHeight - 1 - (textureHeight * (Math.acos(L[Z] / r) / Math.PI) % textureHeight));
 
 			return {
 				lv : lv,
@@ -292,11 +297,11 @@
 	/**
 	 * Create the sphere function opject
 	 */
-	var sphere = function() {
+	var cache;
+	var sphere = function(reuse) {
 
-		textureData = textureImageData.data;
-		canvasData = canvasImageData.data;
-		copyFnc;
+		//textureData = textureImageData.data;
+		canvasData = canvasImageData.data; copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -313,12 +318,16 @@
 		}
 
 		var getVector = (function() {
-			var cache = new Array(cWidth * cHeight);
+			if (!reuse) {
+				cache = new Array(cWidth * cHeight);
+			}
 			return function(pixel) {
 				if (cache[pixel] === undefined) {
-					var v = Math.floor(pixel / cWidth);
-					var h = pixel - v * cWidth;
-					cache[pixel] = calculateVector(h, v);
+					if (!reuse) {
+						var v = Math.floor(pixel / cWidth);
+						var h = pixel - v * cWidth;
+						cache[pixel] = calculateVector(h, v);
+					}
 				}
 				return cache[pixel];
 			};
@@ -363,23 +372,27 @@
 				rx = RX * Math.PI / 180;
 				ry = RY * Math.PI / 180;
 				rz = RZ * Math.PI / 180;
-
 				// add to 24*60*60 so it will be a day before turnBy is negative and it hits the slow negative modulo bug
 				var turnBy = 24 * 60 * 60 + firstFramePos - time * posDelta;
 				var pixel = cWidth * cHeight;
+<<<<<<< HEAD:bubblepodrenderer/demo/js/bubbleHTML5.js
+=======
+
+>>>>>>> 4e486930a739b1af8d1898d739b2f3009690e162:bubblepodrenderer/demo/js/sphere.js
 				yRotVal = YClamp(yRotVal);
+				//console.log("Pixels : " + pixel);
+				var index = 0;
 				while (pixel--) {
 
 					var vector = getVector(pixel);
 					if (vector !== null) {
 						//rotate texture on sphere
 
+						//XAxis Rotation
 						var lh = Math.floor(vector.lh + xRot) % textureWidth;
 
-						//YClamp(yRotVal);
-
+						//YAxis Rotation
 						var lv = (vector.lv + (textureHeight * (yRotVal)));
-						//yMovement = 0;
 
 						xRot += xMovement;
 
@@ -392,6 +405,8 @@
 						canvasData[idxC + 2] = textureData[idxT + 2];
 						canvasData[idxC + 3] = 255;
 
+					} else {
+						//console.log( "NULL VECTA")
 					}
 				}
 				gCtx.putImageData(canvasImageData, 0, 0);
@@ -399,17 +414,19 @@
 				//canvasData = null;
 				//textureData  = null;
 				//copyFnc = null;
-
 			}
 		};
 	};
 
 	function convertToEqui(imageData, width, height, offsetWidth, offsetHeight) {
+		/*
 		console.log("Unwrapped Height" + height);
 		console.log("Unwrapped Width" + width);
 		console.log("Unwrapped HeightOffset" + offsetHeight);
 		console.log("Unwrapped WidthOffset" + offsetWidth);
+		*/
 
+		//create new texture from old image
 		var pixelAmount = 0;
 		var angleOffsetRadians = Math.PI;
 		var fullHeight = width / (2 * Math.PI );
@@ -424,6 +441,7 @@
 			var amplitude = ((maxRadius - minRadius ) * (i / fullHeight ) ) + minRadius;
 
 			for (var j = 0; j < width; ++j) {
+
 				var longitudeAngle = (2 * Math.PI * (j / width ) ) + angleOffsetRadians;
 
 				var sinLongAngle = Math.sin(longitudeAngle);
@@ -441,13 +459,11 @@
 				var xPixel = Math.floor(u * width);
 				var yPixel = Math.floor(v * height);
 
-				//console.log(xPixel + " " + yPixel);
 				var pixel = ((xPixel * width + yPixel) * 4);
-				//console.log("Pixel# " + pixel, "");
-
 				var xPix = texImageData[pixel];
 				var yPix = texImageData[pixel + 1];
 				var zPix = texImageData[pixel + 2];
+
 				buf.push(xPix);
 				buf.push(yPix);
 				buf.push(zPix);
@@ -456,7 +472,8 @@
 			}
 		}
 		var bufIndex = buf.length - 1;
-		console.log("Pixels affected: " + pixelAmount);
+		//console.log("Pixels affected: " + pixelAmount);
+
 		for (var i = 0; i < height * width * 4; i += 4) {
 			if (i != replacePixel) {
 				texImageData[i] = 0;
@@ -479,12 +496,9 @@
 	}
 
 	function copyImageToBuffer(aImg) {
-		originalImage = aImg;
-		if (aImg.naturalWidth / aImg.naturalHeight < 2 && aImg.naturalHeight / aImg.naturalWidth < 2) {
-			isBubblePixImage = true;
-		}
-		if (!isBubblePixImage) {//bubblepod image
 
+		originalImage = aImg;
+		if (!isUnWrappedImage) {//bubblepod image
 			gImage = document.createElement('canvas');
 			textureWidth = aImg.naturalWidth;
 			textureClampHeight = aImg.naturalHeight;
@@ -497,7 +511,8 @@
 			gCtxImg.clearRect(0, 0, textureHeight, textureWidth);
 			gCtxImg.drawImage(aImg, 0, textureWidth / 2 - aImg.naturalHeight / 2);
 			textureImageData = gCtxImg.getImageData(0, 0, textureHeight, textureWidth);
-		} else {
+			textureData = textureImageData.data;
+		} else if (isUnWrappedImage && !isUnWrappedVideo) {
 			// mad bubblepix image
 			gImage = document.createElement('canvas');
 			var max = Math.max(aImg.naturalWidth, aImg.naturalHeight);
@@ -513,15 +528,40 @@
 			gCtxImg.drawImage(aImg, Math.floor((max - aImg.naturalWidth) / 2), Math.floor((max - aImg.naturalHeight) / 2));
 			textureImageData = gCtxImg.getImageData(0, 0, textureWidth, textureHeight);
 			textureImageData = convertToEqui(textureImageData, textureWidth, textureHeight, Math.floor((max - aImg.naturalWidth) / 2), Math.floor((max - aImg.naturalHeight) / 2));
+			textureData = textureImageData.data;
+		} else {
+			//video
+
+			gImage = document.createElement('canvas');
+			backcvs = document.getElementById('backCanvas');
+			bcv = backcvs.getContext("2d");
+			var max = Math.max(cWidth, cHeight);
+			bcv.drawImage(aImg, 0, 0, cWidth, cHeight);
+			var apx = bcv.getImageData(0, 0, cWidth, cHeight);
+			var vidHeight = backcvs.height;
+			var vidWidth = backcvs.width;
+
+			textureWidth = max;
+			textureHeight = max;
+			gImage.width = max;
+			gImage.height = max;
+			gCtxImg = gImage.getContext("2d");
+			gCtxImg.clearRect(0, 0, max, max);
+			gCtxImg.putImageData(apx, Math.floor((max - cWidth) / 2), Math.floor((max - cHeight) / 2));
+			//gCtxImg.drawImage(aImg, 0, 0);
+			textureImageData = gCtxImg.getImageData(0, 0, max, max);
+
+			frames++;
+			textureImageData = convertToEqui(textureImageData, max, max, Math.floor((max - cWidth) / 2), Math.floor((max - cHeight) / 2));
+			setTimeout(copyImageToBuffer, 0, aImg);
+			textureData = textureImageData.data;
 		}
-		hs_ch = ((hs) / cWidth);
-		vs_cv = ((vs) / (cHeight));
 	}
 
+	var frames = 0;
 	function setFOV(fov) {
 		console.log("Changing FOV to " + fov);
 		var aspect = cWidth / cHeight;
-		//ry=90+opts.tilt;
 		FOV = fov;
 		ry = 90;
 		rz = 180 + opts.turn;
@@ -529,7 +569,7 @@
 		RZ = (180 - rz);
 		vs = fov;
 		hs = vs * aspect;
-		hs *= 1.5;
+		hs *= 1.25;
 		hhs = 0.5 * hs;
 		hvs = 0.5 * vs;
 		hs_ch = (hs / cWidth);
@@ -544,53 +584,113 @@
 		b2 = Math.pow(b, 2);
 	}
 
+<<<<<<< HEAD:bubblepodrenderer/demo/js/bubbleHTML5.js
 
 	this.createBubble = function(gCanvas, textureUrl, reloadTexture, element) {
 		//size = Math.max(gCanvas.width, gCanvas.height);
 
+=======
+	var img;
+	var video;
+	var backcvs;
+	var bcv;
+	var bcWidth;
+	var bcHeight;
+	this.createSphere = function(gCanvas, textureUrl, reloadTexture, xmlURL) {
+>>>>>>> 4e486930a739b1af8d1898d739b2f3009690e162:bubblepodrenderer/demo/js/sphere.js
 		gCtx = gCanvas.getContext("2d");
 		var bbl = document.getElementById(element);
 		gCanvas.height = canWidth;
 		gCanvas.width = canHeight;
-		setEventListeners(gCanvas);
+		if (reloadTexture) {
+			setEventListeners(gCanvas);
+		}
 		cHeight = gCanvas.height;
 		cWidth = gCanvas.width;
 		size = gCanvas.width;
+		hs_ch = ((hs) / cWidth);
+		vs_cv = ((vs) / (cHeight));
 
-		var img;
+		//var xmlData = loadXML(xmlURL);
+		//parseXML(xmlData);
+		//console.log(xmlData);
+		//covertToWebPlayerParams()
 		setFOV(FOV);
-		if (reloadTexture) {
+		console.log("canHeight: " + cHeight);
+		console.log("canWidth: " + cWidth);
+		if (reloadTexture && !isUnWrappedVideo) {
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			img = new Image();
 			img.onload = function() {
 				copyImageToBuffer(img);
-				earth = sphere();
-				renderAnimationFrame = function(/* time */time) {
-					/* time ~= +new Date // the unix time */
+				earth = sphere(false);
+				renderAnimationFrame = function(time) {
 					earth.renderFrame(time);
 					window.requestAnimationFrame(renderAnimationFrame);
 				};
 				window.requestAnimationFrame(renderAnimationFrame);
 			};
 			img.setAttribute("src", textureUrl);
-		} else {
+		} else if (reloadTexture && isUnWrappedVideo) {
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
-			copyImageToBuffer(originalImage);
-			earth = sphere();
-			renderAnimationFrame = function(/* time */time) {
-				/* time ~= +new Date // the unix time */
+			video = document.getElementById('video');
+			backcvs = document.getElementById('backCanvas');
+			copyImageToBuffer(video);
+			earth = sphere(false);
+			renderAnimationFrame = function(time) {
 				earth.renderFrame(time);
 				window.requestAnimationFrame(renderAnimationFrame);
 			};
-
 			window.requestAnimationFrame(renderAnimationFrame);
+
+		} else if (!reloadTexture && isUnWrappedVideo) {
+			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
+			copyImageToBuffer(originalImage);
+			earth = sphere(false);
+		} else {
+			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
+			copyImageToBuffer(originalImage);
+			earth = sphere(false);
 		}
+
 		bbl = null;
 	};
 
-	/////bubble interaction
-	var
-	bubbleCanvas;
+	//convert flash and webgl params to html5
+	function convertToWebPlayerParams() {
+		bubble_details.uPerp = xml_details.cX;
+		bubble_details.vPerp = xml_details.cY;
+		bubble_details.maxDiam = xml_details.height;
+		bubble_details.minDiam = xml_details.innerCircle * bubble_details.maxDiam;
+	}
+
+	function loadXML(xml) {
+		/*
+		 try {
+		 netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+		 } catch (e) {
+		 //alert("Permission UniversalBrowserRead denied.");
+		 }*/
+
+		var xhttp;
+		if (window.XMLHttpRequest) {
+			console.log("New HTTP Request " + xml);
+			xhttp = new XMLHttpRequest();
+
+		} else {
+			console.log("New ActiveX Request");
+			xhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+
+		xhttp.open("GET", xml, false);
+		console.log("sending");
+		xhttp.send(null);
+		console.log("sent");
+		return xhttp.responseText;
+	}
+
+	//bubble interaction specific variables
+	var bubbleCanvas;
 	var textureClampHeight;
 	var isUserInteracting = false;
 	var isLeftInteracting = false;
@@ -612,6 +712,10 @@
 	var canWidth = originalCanWidth;
 	var canHeight = originalCanWidth * 2;
 	var originalImage;
+
+	var isUnWrappedImage = false;
+	var isUnWrappedVideo = false;
+
 	function setEventListeners(canvas) {
 		bubbleCanvas = canvas;
 		bubbleCanvas.addEventListener("mousedown", mouseDownEvent, false);
@@ -621,31 +725,29 @@
 		bubbleCanvas.addEventListener("touchstart", mouseDownEvent, false);
 		bubbleCanvas.addEventListener("touchend", mouseUpEvent, false);
 		bubbleCanvas.addEventListener("touchmove", mouseMoveEvent, false);
-		//bubbleCanvas.addEventListener("mouseout", mouseOutEvent, false);
 		document.addEventListener("mouseup", mouseUpEvent, false);
-		if (!isBubblePixImage) {
+		if (!isUnWrappedImage) {
 			bubbleCanvas.addEventListener('mousewheel', mouseScrollEvent, false);
 			bubbleCanvas.addEventListener('DOMMouseScroll', mouseScrollEvent, false);
 		}
 		var el = document.getElementById("fullscreen");
 		if (el.addEventListener) {
 			el.addEventListener("click", fullScreenButtonClick, false);
-			console.log(el + " 1");
-
 		} else if (el.attachEvent) {
 			el.attachEvent('onclick', fullScreenButtonClick);
-			console.log(el + " 2");
+			//console.log(el + " 2");
 		}
 		el = null;
-
 	}
 
 	function fullScreenButtonClick() {
-		//alert("Bingo");
-		//console.log("Bingo");
-
 		if (isFullScreen) {
+<<<<<<< HEAD:bubblepodrenderer/demo/js/bubbleHTML5.js
 			var el = document.getElementById("bubbleViewer");
+=======
+
+			var el = document.getElementById("bubble");
+>>>>>>> 4e486930a739b1af8d1898d739b2f3009690e162:bubblepodrenderer/demo/js/sphere.js
 			el.style.height = "244px";
 			el.style.width = "610px";
 			canWidth = originalCanWidth;
@@ -658,9 +760,13 @@
 				document.webkitCancelFullScreen();
 			}
 			el = null;
-			//setSmallScreen
 		} else {
+<<<<<<< HEAD:bubblepodrenderer/demo/js/bubbleHTML5.js
 			var el = document.getElementById("bubbleViewer");
+=======
+
+			var el = document.getElementById("bubble");
+>>>>>>> 4e486930a739b1af8d1898d739b2f3009690e162:bubblepodrenderer/demo/js/sphere.js
 			if (el.requestFullScreen) {
 				el.requestFullScreen();
 			} else if (el.mozRequestFullScreen) {
@@ -668,12 +774,13 @@
 			} else if (el.webkitRequestFullScreen) {
 				el.webkitRequestFullScreen();
 			}
+
 			el.style.height = "100%";
 			el.style.width = "100%";
 
-			var multiplier = (el.offsetWidth * el.offsetHeight) / (610 * 244);
-			multiplier /= 2;
-			canWidth *= 2;
+			//double or treble canvas width and height for full screen
+			canWidth *= 3;
+			//height must be double the width
 			canHeight = canWidth * 2;
 			//setFullScreen
 			el = null;
@@ -692,8 +799,7 @@
 		textureImageData = null;
 		gCanvas = null;
 		bubbleCanvas = null;
-		bubbleCanvas = null;
-		renderAnimationFrame = null;
+		img = null;
 		earth = null;
 		createBubble(document.getElementById("bubble"), "", false);
 	}
@@ -704,7 +810,6 @@
 		isUserInteracting = true;
 		onMouseDownEventX = event.clientX;
 		onMouseDownEventY = event.clientY;
-		//alert("X = " + eventMouseX + "Y = " + eventMouseY);
 	}
 
 	function mouseUpEvent(event) {
@@ -719,19 +824,15 @@
 
 	var yaya = 0;
 	function YClamp(y) {
-
-		
 		if (y > textureClampHeight / 4) {
 			y = textureClampHeight / 4;
 		} else if (y < -textureClampHeight / 4) {
 			y = -textureClampHeight / 4;
 		}
-
 		return Math.floor(y);
 	}
 
 	function mouseOutEvent(event) {
-		//isUserInteracting = false;
 		eventMouseX = event.clientX;
 		eventMouseY = event.clientY;
 	}
@@ -741,14 +842,14 @@
 		if (isUserInteracting) {
 			eventMouseX = event.clientX;
 			eventMouseY = event.clientY;
-			xMovement = (onMouseDownEventX - eventMouseX) / 1000000;
+			xMovement = (onMouseDownEventX - eventMouseX) / 10000000;
 			yMovement = (onMouseDownEventY - eventMouseY);
 			yRotVal = yMovement + yRot;
 		}
 	}
 
 	function mouseScrollEvent(event) {
-		console.log("scroll");
+		//console.log("scroll");
 		if (event.wheelDeltaY) {
 			if (event.wheelDeltaY < 0 && FOV < 21)
 				setFOV(34);
@@ -767,6 +868,37 @@
 			else if (event.detail < 0 && FOV > 33)
 				setFOV(20);
 		}
+	}
+
+
+	this.setUnwrappedParameters = function(uPerpendicular, vPerpendicular, minDiameter, maxDiameter, fov, canvasWidth, isVideo) {
+		FOV = fov;
+		bubble_details.uPerp = uPerpendicular;
+		bubble_details.vPerp = vPerpendicular;
+		bubble_details.minDiam = minDiameter;
+		bubble_details.maxDiam = maxDiameter;
+		originalCanWidth = canvasWidth;
+		canWidth = canvasWidth;
+		canHeight = canWidth * 2;
+		//console.log("Set Unwrapped Parameters");
+		isUnWrappedImage = true;
+		isUnWrappedVideo = isVideo;
+	};
+
+	this.setEquiParameters = function(fov, canvasWidth) {
+		FOV = fov;
+		originalCanWidth = canvasWidth;
+		canWidth = canvasWidth;
+		canHeight = canWidth * 2;
+		isUnWrappedImage = false;
+	};
+
+	function parseXML(xml) {
+		xml_details.cX = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
+		xml_details.cY = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
+		xml_details.innerCircle = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('inner_circle'));
+		xml_details.width = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
+		xml_details.height = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
 	}
 
 }).call(this);
