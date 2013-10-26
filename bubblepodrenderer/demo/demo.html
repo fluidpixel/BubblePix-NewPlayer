@@ -9,20 +9,12 @@
 		<link href="style.css" rel="stylesheet">
 		<script>
 			function go() {
-				var texture = "PanoOutput.png";
-
-				//Set parameters functions for EITHER unwrapped(bubblepix) image (A), or Equi Parameters (B) for Equirectangular images
-				//Must be set before createSphere is called
-
-				//A: setUnwrappedParameters (uPerpendicular, vPerpendicular, minDiameter, maxDiameter, fov, canvasWidth)
-				//B: setEquiParameters(FOV,canvasWidth);
-
-				var isVideo = false;
-				//setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 20, 200, isVideo);
-				setEquiParameters(20, 400);
-				//create sphere with texture
-				createSphere(document.getElementById("sphere"), texture, true, "https://bubblepix.com/bubbl3xml.xml?settings=0.7683824,0.5739152,0.491784,0.525,0.507394,photo");
-
+				var textureUrl = "bubble_equi.jpg";
+				var textureXml = "https://bubblepix.com/bubbl3xml.xml?settings=0.7683824,0.5739152,0.491784,0.525,0.507394,photo";
+				var isEqui = true;
+				
+				init(isEqui, textureUrl, textureXml);
+				
 				var stats = new Stats();
 				stats.getDomElement().style.position = 'relative';
 				stats.getDomElement().style.marginLeft = '-40px';
@@ -48,10 +40,10 @@
 					</div>
 				</div>
 				<canvas id="sphere">
-					<canvas id="backCanvas" height = "200" width = "400" >
+					<canvas id="backCanvas" height = "800" width = "1200" >
 
 						<video controls autoplay  id = "video" >
-							<source src="vwd.mp4" type="video/mp4" >
+							<source src="" type="video/mp4" >
 
 							Your browser does not support the video tag.
 						</video>

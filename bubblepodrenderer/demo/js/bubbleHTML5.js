@@ -301,7 +301,8 @@
 	var sphere = function(reuse) {
 
 		//textureData = textureImageData.data;
-		canvasData = canvasImageData.data; copyFnc;
+		canvasData = canvasImageData.data;
+		copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -585,17 +586,45 @@
 	}
 
 <<<<<<< HEAD:bubblepodrenderer/demo/js/bubbleHTML5.js
+<<<<<<< HEAD:bubblepodrenderer/demo/js/bubbleHTML5.js
 
 	this.createBubble = function(gCanvas, textureUrl, reloadTexture, element) {
 		//size = Math.max(gCanvas.width, gCanvas.height);
 
 =======
+=======
+	//video/img/ and false canvas context
+>>>>>>> 56cf216b4e0cc3a9c3307751c78b799463b0f751:bubblepodrenderer/demo/js/sphere.js
 	var img;
 	var video;
 	var backcvs;
 	var bcv;
 	var bcWidth;
 	var bcHeight;
+
+	this.init = function(isEqui, textureUrl, textureXMLUrl) {
+		//Set parameters functions for EITHER unwrapped(bubblepix) image (A), or Equi Parameters (B) for Equirectangular images
+		//Must be set before createSphere is called
+
+		//A: setUnwrappedParameters (uPerpendicular, vPerpendicular, minDiameter, maxDiameter, fov, canvasWidth)
+		//B: setEquiParameters(FOV,canvasWidth);
+		var isVideo = false;
+		var vidIdentifier = ".mp4";
+		if (textureUrl.indexOf(vidIdentifier) !== -1)
+			isVideo = true;
+		isUnWrappedImage = !isEqui;
+
+		//these will be overwritten if there is xml data)
+		if (isUnWrappedImage) {
+			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 20, 300, isVideo);
+		} else {
+			setEquiParameters(20, 400);
+		}
+		//setEquiParameters(20, 400);
+		//create sphere with texture
+		createSphere(document.getElementById("sphere"), textureUrl, true, textureXMLUrl);
+
+	};
 	this.createSphere = function(gCanvas, textureUrl, reloadTexture, xmlURL) {
 >>>>>>> 4e486930a739b1af8d1898d739b2f3009690e162:bubblepodrenderer/demo/js/sphere.js
 		gCtx = gCanvas.getContext("2d");
@@ -611,10 +640,12 @@
 		hs_ch = ((hs) / cWidth);
 		vs_cv = ((vs) / (cHeight));
 
-		//var xmlData = loadXML(xmlURL);
-		//parseXML(xmlData);
-		//console.log(xmlData);
-		//covertToWebPlayerParams()
+		var xmlData = loadXML(xmlURL);
+		if (xmlData) {
+			parseXML(xmlData);
+			console.log(xmlData);
+
+		}
 		setFOV(FOV);
 		console.log("canHeight: " + cHeight);
 		console.log("canWidth: " + cWidth);
@@ -632,8 +663,12 @@
 			};
 			img.setAttribute("src", textureUrl);
 		} else if (reloadTexture && isUnWrappedVideo) {
+
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
-			video = document.getElementById('video');
+			video = document.getElementsByTagName('video')[0];
+			var sources = video.getElementsByTagName('source');
+			sources[0].src = textureUrl;
+			video.load();
 			backcvs = document.getElementById('backCanvas');
 			copyImageToBuffer(video);
 			earth = sphere(false);
@@ -644,6 +679,7 @@
 			window.requestAnimationFrame(renderAnimationFrame);
 
 		} else if (!reloadTexture && isUnWrappedVideo) {
+			video.load();
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			copyImageToBuffer(originalImage);
 			earth = sphere(false);
@@ -684,9 +720,15 @@
 
 		xhttp.open("GET", xml, false);
 		console.log("sending");
-		xhttp.send(null);
+		try {
+			xhttp.send(null);
+			return xhttp.responseText;
+		} catch(e) {
+			alert("XML request failed");
+			return false;
+		}
 		console.log("sent");
-		return xhttp.responseText;
+
 	}
 
 	//bubble interaction specific variables
@@ -881,7 +923,7 @@
 		canWidth = canvasWidth;
 		canHeight = canWidth * 2;
 		//console.log("Set Unwrapped Parameters");
-		isUnWrappedImage = true;
+
 		isUnWrappedVideo = isVideo;
 	};
 
@@ -890,15 +932,20 @@
 		originalCanWidth = canvasWidth;
 		canWidth = canvasWidth;
 		canHeight = canWidth * 2;
-		isUnWrappedImage = false;
 	};
 
 	function parseXML(xml) {
-		xml_details.cX = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
-		xml_details.cY = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
-		xml_details.innerCircle = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('inner_circle'));
-		xml_details.width = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
-		xml_details.height = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
+		if (isUnWrappedImage) {
+			xml_details.cX = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
+			xml_details.cY = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
+			xml_details.innerCircle = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('inner_circle'));
+			xml_details.width = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
+			xml_details.height = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
+		}
+		else
+		{
+			
+		}
 	}
 
 }).call(this);
