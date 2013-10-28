@@ -24,7 +24,7 @@ body {
 	
 }
 
-#bubble {
+#bubbleViewer {
 	//display: table-cell;
 	vertical-align: middle;
 	width:610px;
@@ -38,7 +38,7 @@ a {
 	color: white;
 }
 
-#sphere{
+#bubble{
 	width: 100%;
 	height: 100%;
 	position:relative;

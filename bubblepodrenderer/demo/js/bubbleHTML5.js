@@ -301,8 +301,7 @@
 	var sphere = function(reuse) {
 
 		//textureData = textureImageData.data;
-		canvasData = canvasImageData.data;
-		copyFnc;
+		canvasData = canvasImageData.data; copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -603,52 +602,53 @@
 		}
 		//setEquiParameters(20, 400);
 		//create sphere with texture
-		//createBubble(document.getElementById("sphere"), textureUrl, true, textureXMLUrl);
-		createBubble(document.getElementById("bubble"), textureUrl, true, textureXMLUrl);
+		createBubble(document.getElementById("bubble"), textureUrl, textureXMLUrl);
+		//createBubble(document.getElementById("bubble"), textureUrl, true, textureXMLUrl);
 
 	};
 
-	this.createBubble = function(gCanvas, textureUrl, reloadTexture, xmlURL) {
-		var img;
-		var video;
-		var backcvs;
-		var bcv;
-		var bcWidth;
-		var bcHeight;
-
+	//need to be global
+	var img = undefined;
+	var video;
+	var backcvs;
+	var bcv;
+	var bcWidth;
+	var bcHeight;
+	this.createBubble = function(gCanvas, textureUrl, xmlURL) {
+		var loadTexture = false;
+		if ( img === undefined) {
+			loadTexture = true;
+		}
 		gCtx = gCanvas.getContext("2d");
-		var bbl = document.getElementById("bubbleViewer");
 		gCanvas.height = canWidth;
 		gCanvas.width = canHeight;
-		
-		if (reloadTexture) {
+
+		if (loadTexture) {
 			setEventListeners(gCanvas);
+			var xmlData = loadXML(xmlURL);
+			if (xmlData) {
+				parseXML(xmlData);
+			}
 		}
-		
+
 		cHeight = gCanvas.height;
 		cWidth = gCanvas.width;
 		size = gCanvas.width;
 		hs_ch = ((hs) / cWidth);
 		vs_cv = ((vs) / (cHeight));
 
-		var xmlData = loadXML(xmlURL);
-		if (xmlData) {
-			parseXML(xmlData);
-			//console.log(xmlData);
-		}
-
 		var isVideo = false;
 		var vidIdentifier = ".mp4";
 		if (textureUrl.indexOf(vidIdentifier) !== -1)
 			isVideo = true;
-			
+
 		//this.setUnwrappedParameters = function(uPerpendicular, vPerpendicular, minDiameter, maxDiameter, fov, canvasWidth, isVideo) {
 		//setUnwrappedParameters(xml_details.cX, xml_details.cY, xml_details.innerCircle, xml_details.height, FOV, cWidth, isVideo);
 
 		setFOV(FOV);
 		console.log("canHeight: " + cHeight);
 		console.log("canWidth: " + cWidth);
-		if (reloadTexture && !isUnWrappedVideo) {
+		if (loadTexture && !isUnWrappedVideo) {
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			img = new Image();
 			img.crossOrigin = "Anonymous";
@@ -662,12 +662,15 @@
 				window.requestAnimationFrame(renderAnimationFrame);
 			};
 			img.setAttribute("src", textureUrl);
-		} else if (reloadTexture && isUnWrappedVideo) {
+		} else if (loadTexture && isUnWrappedVideo) {
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			video = document.getElementsByTagName('video')[0];
+
+			//start video
 			var sources = video.getElementsByTagName('source');
 			sources[0].src = textureUrl;
 			video.load();
+
 			backcvs = document.getElementById('backCanvas');
 			copyImageToBuffer(video);
 			earth = sphere(false);
@@ -677,7 +680,7 @@
 			};
 			window.requestAnimationFrame(renderAnimationFrame);
 
-		} else if (!reloadTexture && isUnWrappedVideo) {
+		} else if (!loadTexture && isUnWrappedVideo) {
 			video.load();
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			copyImageToBuffer(originalImage);
@@ -687,7 +690,7 @@
 			copyImageToBuffer(originalImage);
 			earth = sphere(false);
 		}
-		bbl = null;
+
 	};
 
 	//convert flash and webgl params to html5
@@ -709,7 +712,7 @@
 		 } catch (e) {
 		 //alert("Permission UniversalBrowserRead denied.");
 		 }*/
-		
+
 		var xhttp;
 		if (window.XMLHttpRequest) {
 			console.log("New HTTP Request " + xml);
@@ -802,7 +805,7 @@
 			el = null;
 		} else {
 
-			var el = document.getElementById("bubble");
+			var el = document.getElementById("bubbleViewer");
 
 			if (el.requestFullScreen) {
 				el.requestFullScreen();
@@ -827,21 +830,24 @@
 	}
 
 	function reload() {
-		textureData = null;
-		canvasData = null;
-		gCtx = null;
-		canvasImageData = null;
-		gCtxImg = null;
-		gImage = null;
-		textureImageData = null;
-		gCanvas = null;
-		bubbleCanvas = null;
-		img = null;
-		earth = null;
-		createBubble(document.getElementById("bubbleViewer"), "", false);
+		/*
+		 textureData = null;
+		 canvasData = null;
+		 gCtx = null;
+		 canvasImageData = null;
+		 gCtxImg = null;
+		 gImage = null;
+		 textureImageData = null;
+		 gCanvas = null;
+		 bubbleCanvas = null;
+		 img = null;
+		 earth = null;*/
+
+		createBubble(document.getElementById("bubble"), "", "");
 	}
 
 	function mouseDownEvent(event) {
+		event.preventDefault();
 		eventMouseX = event.clientX;
 		eventMouseY = event.clientY;
 		isUserInteracting = true;
@@ -870,12 +876,14 @@
 	}
 
 	function mouseOutEvent(event) {
+		event.preventDefault();
 		eventMouseX = event.clientX;
 		eventMouseY = event.clientY;
 	}
 
 	var yRotVal = 0;
 	function mouseMoveEvent(event) {
+		event.preventDefault();
 		if (isUserInteracting) {
 			eventMouseX = event.clientX;
 			eventMouseY = event.clientY;
@@ -930,11 +938,8 @@
 	function parseXML(xml) {
 		if (isUnWrappedImage) {
 			xml_details.cX = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
-
 			xml_details.cY = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
 			xml_details.cX = 1 - xml_details.cX;
-			//xml_details.cY = 1 - xml_details.cY;
-
 			xml_details.innerCircle = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('inner_circle'));
 			xml_details.width = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
 			xml_details.height = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
@@ -943,7 +948,6 @@
 
 		}
 	}
-
 
 }).call(this);
 
