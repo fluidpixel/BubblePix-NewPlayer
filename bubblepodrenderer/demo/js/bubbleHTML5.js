@@ -303,7 +303,8 @@
 	var sphere = function(reuse) {
 
 		//textureData = textureImageData.data;
-		canvasData = canvasImageData.data; copyFnc;
+		canvasData = canvasImageData.data;
+		copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -379,6 +380,8 @@
 				var pixel = cWidth * cHeight;
 
 				yRotVal = YClamp(yRotVal);
+				var xNumber = xMovement;
+
 				//console.log("Pixels : " + pixel);
 				var index = 0;
 				while (pixel--) {
@@ -389,11 +392,13 @@
 
 						//XAxis Rotation
 						var lh = Math.floor(vector.lh + xRot) % textureWidth;
-
+						xRot += xNumber;
 						//YAxis Rotation
-						var lv = (vector.lv + (textureHeight * (yRotVal)));
-
-						xRot += xMovement;
+						var lv;
+						if (!isUnWrappedImage) {
+							lv = (vector.lv + (textureHeight * (yRotVal)));
+						} else
+							lv = (vector.lv);
 
 						var idxC = pixel * 4;
 
@@ -614,9 +619,9 @@
 
 		//these will be overwritten if there is xml data)
 		if (isUnWrappedImage) {
-			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 20, 300, isVideo);
+			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 18, 300, isVideo);
 		} else {
-			setEquiParameters(20, 300);
+			setEquiParameters(12, 300);
 		}
 		//setEquiParameters(20, 400);
 		//create sphere with texture
