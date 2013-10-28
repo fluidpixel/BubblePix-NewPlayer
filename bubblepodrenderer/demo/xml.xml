@@ -1,0 +1,33 @@
+<my_params>
+<stage>
+<panorama_controller xml_path="http://bubblepix-web-staging.herokuapp.com/stillInterface.xml" posx="-80" posy=""/>
+<video_controller xml_path="http://bubblepix-web-staging.herokuapp.com/videoInterface.xml" posx="10" posy="10"/>
+<sandglass path="https://s3-eu-west-1.amazonaws.com/files.bubblepix.com/site/sys_img/my_sandglass.png"/>
+<cursor path="https://s3-eu-west-1.amazonaws.com/files.bubblepix.com/site/sys_img/my_cursor.png"/>
+<captions fov_max=" " fov_min=" " video_preloading="Drag to Spin"/>
+<controller_font size_prog_ind="12" size_pos_ind="12"/>
+</stage>
+<context_menu>
+<about_me my_name="BubblePix Ltd" my_link="http://www.bubblepix.com"/>
+<prologue path="https://s3-eu-west-1.amazonaws.com/files.bubblepix.com/site/sys_img/help_playback.png" posy="80"/>
+</context_menu>
+<user_panel>
+<logo path="https://s3-eu-west-1.amazonaws.com/files.bubblepix.com/site/sys_img/bubblepixlogo.png" posx="10" posy="10"/>
+</user_panel>
+<play_objects>
+<auto init_start="yes" pan_speed="-0.30"/>
+<crop width="0.606618" height="0.808824" cx="0.478873" cy="0.51875" inner_circle="0.459071"/>
+<behavior pause_on_start="yes" start_button="yes"/>
+<projection proj_type="1" elevation="40" depression="35" implicit="yes"/>
+<view flip_verical="no" flip_horizontal="yes" init_fov="120" lock_fov="yes" init_yaw="-90" init_pitch="0" lock_nadirs="no" lock_vertical="yes" init_filter="yes" disable_wheel="yes"/>
+<image cross_domain="yes" video_repeat="no"/>
+<caps path_zenith="http://bubblepix-web-staging.herokuapp.com/sys_img/cap_zenith.png" path_nadir="http://bubblepix-web-staging.herokuapp.com/sys_img/cap_ndr.png"/>
+</play_objects>
+<hotspot>
+<bornes minX="-0.4274038730874619" maxX="-0.14484106302930788" minY="0" maxY="0" minZ="0" maxZ="0"/>
+<logo x="43" y="48" z="-168"/>
+<action>
+window.open("https://bubblepix.com/"); console.log("hotspot !");
+</action>
+</hotspot>
+</my_params>

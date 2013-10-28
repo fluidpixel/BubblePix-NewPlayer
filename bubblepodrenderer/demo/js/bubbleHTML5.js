@@ -35,7 +35,9 @@
 		cY : 0.0,
 		width : 0.0,
 		height : 0.0,
-		innerCircle : 0.0
+		innerCircle : 0.0,
+		flippedX : false,
+		flippedY : false
 	};
 
 	var renderAnimationFrame;
@@ -424,6 +426,22 @@
 		*/
 
 		//create new texture from old image
+		console.log("OH: " + offsetHeight);
+		console.log("OW: " + offsetWidth);
+
+		if (offsetHeight > 0) {
+			var multiplier = (height + offsetHeight * 3) / height;
+			bubble_details.maxDiam /= multiplier;
+			bubble_details.minDiam /= multiplier;
+			console.log("Multiplier: " + multiplier);
+		} else if (offsetWidth > 0) {
+			var multiplier = (width + offsetWidth * 3 ) / width;
+			bubble_details.maxDiam /= multiplier;
+			bubble_details.minDiam /= multiplier;
+			console.log("Multiplier: " + multiplier);
+		}
+		console.log("newMinDiam: " + bubble_details.minDiam);
+		console.log("newMaxDiam: " + bubble_details.maxDiam);
 		var pixelAmount = 0;
 		var angleOffsetRadians = Math.PI;
 		var fullHeight = width / (2 * Math.PI );
@@ -444,7 +462,7 @@
 				var sinLongAngle = Math.sin(longitudeAngle);
 				var cosLongAngle = Math.cos(longitudeAngle);
 
-				var u = (1.0) * sinLongAngle;
+				var u = (1.00) * sinLongAngle;
 				var v = cosLongAngle;
 
 				u *= amplitude;
@@ -528,7 +546,6 @@
 			textureData = textureImageData.data;
 		} else {
 			//video
-
 			gImage = document.createElement('canvas');
 			backcvs = document.getElementById('backCanvas');
 			bcv = backcvs.getContext("2d");
@@ -592,19 +609,19 @@
 		var vidIdentifier = ".mp4";
 		if (textureUrl.indexOf(vidIdentifier) !== -1)
 			isVideo = true;
+
 		isUnWrappedImage = !isEqui;
 
 		//these will be overwritten if there is xml data)
 		if (isUnWrappedImage) {
 			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 20, 300, isVideo);
 		} else {
-			setEquiParameters(20, 400);
+			setEquiParameters(20, 300);
 		}
 		//setEquiParameters(20, 400);
 		//create sphere with texture
 		createBubble(document.getElementById("bubble"), textureUrl, textureXMLUrl);
 		//createBubble(document.getElementById("bubble"), textureUrl, true, textureXMLUrl);
-
 	};
 
 	//need to be global
@@ -612,11 +629,12 @@
 	var video;
 	var backcvs;
 	var bcv;
+	var xmlData;
 	var bcWidth;
 	var bcHeight;
 	this.createBubble = function(gCanvas, textureUrl, xmlURL) {
 		var loadTexture = false;
-		if ( img === undefined) {
+		if (img === undefined) {
 			loadTexture = true;
 		}
 		gCtx = gCanvas.getContext("2d");
@@ -625,10 +643,12 @@
 
 		if (loadTexture) {
 			setEventListeners(gCanvas);
-			var xmlData = loadXML(xmlURL);
-			if (xmlData) {
-				parseXML(xmlData);
-			}
+			xmlData = loadXML(xmlURL);
+		}
+		if (xmlData) {
+			parseXML(xmlData);
+		} else {
+			alert("ERROR: Invalid XML Data");
 		}
 
 		cHeight = gCanvas.height;
@@ -637,18 +657,11 @@
 		hs_ch = ((hs) / cWidth);
 		vs_cv = ((vs) / (cHeight));
 
-		var isVideo = false;
-		var vidIdentifier = ".mp4";
-		if (textureUrl.indexOf(vidIdentifier) !== -1)
-			isVideo = true;
-
-		//this.setUnwrappedParameters = function(uPerpendicular, vPerpendicular, minDiameter, maxDiameter, fov, canvasWidth, isVideo) {
-		//setUnwrappedParameters(xml_details.cX, xml_details.cY, xml_details.innerCircle, xml_details.height, FOV, cWidth, isVideo);
-
 		setFOV(FOV);
 		console.log("canHeight: " + cHeight);
 		console.log("canWidth: " + cWidth);
 		if (loadTexture && !isUnWrappedVideo) {
+			//loading image for first time
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			img = new Image();
 			img.crossOrigin = "Anonymous";
@@ -663,6 +676,7 @@
 			};
 			img.setAttribute("src", textureUrl);
 		} else if (loadTexture && isUnWrappedVideo) {
+			//loading video for first time
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			video = document.getElementsByTagName('video')[0];
 
@@ -681,11 +695,13 @@
 			window.requestAnimationFrame(renderAnimationFrame);
 
 		} else if (!loadTexture && isUnWrappedVideo) {
+			//reloading video
 			video.load();
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			copyImageToBuffer(originalImage);
 			earth = sphere(false);
 		} else {
+			//reloading image
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			copyImageToBuffer(originalImage);
 			earth = sphere(false);
@@ -695,8 +711,10 @@
 
 	//convert flash and webgl params to html5
 	function convertToWebPlayerParams() {
-		bubble_details.uPerp = xml_details.cX;
-		bubble_details.vPerp = xml_details.cY;
+
+		bubble_details.uPerp = xml_details.cY;
+		bubble_details.vPerp = xml_details.cX;
+
 		bubble_details.maxDiam = xml_details.height;
 		bubble_details.minDiam = xml_details.innerCircle * bubble_details.maxDiam;
 		console.log("uPerp " + bubble_details.uPerp);
@@ -778,6 +796,7 @@
 			bubbleCanvas.addEventListener('DOMMouseScroll', mouseScrollEvent, false);
 		}
 		var el = document.getElementById("fullscreen");
+
 		if (el.addEventListener) {
 			el.addEventListener("click", fullScreenButtonClick, false);
 		} else if (el.attachEvent) {
@@ -939,7 +958,7 @@
 		if (isUnWrappedImage) {
 			xml_details.cX = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cx'));
 			xml_details.cY = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
-			xml_details.cX = 1 - xml_details.cX;
+			//xml_details.cX = 1 - xml_details.cX;
 			xml_details.innerCircle = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('inner_circle'));
 			xml_details.width = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
 			xml_details.height = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
