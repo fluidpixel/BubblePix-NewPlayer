@@ -699,7 +699,7 @@
 		console.log("uPerp " + bubble_details.uPerp);
 		console.log("vPerp " + bubble_details.vPerp);
 		console.log("minDiam " + bubble_details.minDiam);
-		console.log("minDiam " + bubble_details.maxDiam);
+		console.log("maxDiam " + bubble_details.maxDiam);
 	}
 
 	function loadXML(xml) {
@@ -938,7 +938,7 @@
 			xml_details.innerCircle = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('inner_circle'));
 			xml_details.width = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
 			xml_details.height = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
-			//convertToWebPlayerParams();
+			convertToWebPlayerParams();
 		} else {
 
 		}
