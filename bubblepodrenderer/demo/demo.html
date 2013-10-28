@@ -9,9 +9,9 @@
 		<link href="style.css" rel="stylesheet">
 		<script>
 			function go() {
-				var textureUrl = "bubble_equi.jpg";
+				var textureUrl = "vid.mp4";
 				var textureXml = "https://bubblepix.com/bubbl3xml.xml?settings=0.7683824,0.5739152,0.491784,0.525,0.507394,photo";
-				var isEqui = true;
+				var isEqui = false;
 				
 				init(isEqui, textureUrl, textureXml);
 				
@@ -32,14 +32,16 @@
 			<h3>BubblePod</h3>
 			<div id="bubble" >
 				<div id="ui">
-					<div Did="logo">
+					<div id="logo">
 						<img src="images/logo.png">
 					</div>
 					<div id="fullscreen">
 						<img src="images/fullscreen.png">
 					</div>
+			<div id="fps"></div>
 				</div>
 				<canvas id="sphere">
+					
 					<canvas id="backCanvas" height = "800" width = "1200" >
 
 						<video controls autoplay  id = "video" >
@@ -53,6 +55,5 @@
 					Sorry, your browser does not support the canvas element
 				</canvas>
 			</div>
-			<div id="fps"></div>
 	</body>
 </html>

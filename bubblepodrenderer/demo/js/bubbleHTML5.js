@@ -720,7 +720,7 @@
 			xhttp.send(null);
 			return xhttp.responseXML;
 		} catch(e) {
-			alert("XML request failed");
+			alert("ERROR: XML request failed.\n" + e);
 			return false;
 		}
 		console.log("sent");
