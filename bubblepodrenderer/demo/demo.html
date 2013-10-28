@@ -5,7 +5,7 @@
 		<title>BubblePod Renderer</title>
 		<script src="js/Stats.js"></script>
 		<script src="js/requestanimationframe.polyfill.js"></script>
-		<script src="js/sphere.js"></script>
+		<script src="js/bubbleHTML5.js"></script>
 		<link href="style.css" rel="stylesheet">
 		<script>
 			function go() {
@@ -13,7 +13,7 @@
 				var textureXml = "https://bubblepix.com/bubbl3xml.xml?settings=0.7683824,0.5739152,0.491784,0.525,0.507394,photo";
 				var isEqui = false;
 				
-				init(isEqui, textureUrl, textureXml);
+				initHTML5(isEqui, textureUrl, textureXml);
 				
 				var stats = new Stats();
 				stats.getDomElement().style.position = 'relative';

@@ -582,6 +582,7 @@
 		b2 = Math.pow(b, 2);
 	}
 
+
 	this.initHTML5 = function(isEqui, textureUrl, textureXMLUrl) {
 		//Set parameters functions for EITHER unwrapped(bubblepix) image (A), or Equi Parameters (B) for Equirectangular images
 		//Must be set before createSphere is called
@@ -602,25 +603,28 @@
 		}
 		//setEquiParameters(20, 400);
 		//create sphere with texture
+		//createBubble(document.getElementById("sphere"), textureUrl, true, textureXMLUrl);
 		createBubble(document.getElementById("bubble"), textureUrl, true, textureXMLUrl);
 
 	};
+
 	this.createBubble = function(gCanvas, textureUrl, reloadTexture, xmlURL) {
-		
 		var img;
 		var video;
 		var backcvs;
 		var bcv;
 		var bcWidth;
 		var bcHeight;
-		
+
 		gCtx = gCanvas.getContext("2d");
 		var bbl = document.getElementById("bubbleViewer");
 		gCanvas.height = canWidth;
 		gCanvas.width = canHeight;
+		
 		if (reloadTexture) {
 			setEventListeners(gCanvas);
 		}
+		
 		cHeight = gCanvas.height;
 		cWidth = gCanvas.width;
 		size = gCanvas.width;
@@ -631,16 +635,16 @@
 		if (xmlData) {
 			parseXML(xmlData);
 			//console.log(xmlData);
-
 		}
-		
+
 		var isVideo = false;
 		var vidIdentifier = ".mp4";
 		if (textureUrl.indexOf(vidIdentifier) !== -1)
 			isVideo = true;
+			
 		//this.setUnwrappedParameters = function(uPerpendicular, vPerpendicular, minDiameter, maxDiameter, fov, canvasWidth, isVideo) {
-		setUnwrappedParameters(xml_details.cX, xml_details.cY, xml_details.innerCircle, xml_details.height, FOV, cWidth, isVideo);
-		
+		//setUnwrappedParameters(xml_details.cX, xml_details.cY, xml_details.innerCircle, xml_details.height, FOV, cWidth, isVideo);
+
 		setFOV(FOV);
 		console.log("canHeight: " + cHeight);
 		console.log("canWidth: " + cWidth);
@@ -659,7 +663,6 @@
 			};
 			img.setAttribute("src", textureUrl);
 		} else if (reloadTexture && isUnWrappedVideo) {
-
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			video = document.getElementsByTagName('video')[0];
 			var sources = video.getElementsByTagName('source');
@@ -684,7 +687,6 @@
 			copyImageToBuffer(originalImage);
 			earth = sphere(false);
 		}
-
 		bbl = null;
 	};
 
@@ -694,6 +696,10 @@
 		bubble_details.vPerp = xml_details.cY;
 		bubble_details.maxDiam = xml_details.height;
 		bubble_details.minDiam = xml_details.innerCircle * bubble_details.maxDiam;
+		console.log("uPerp " + bubble_details.uPerp);
+		console.log("vPerp " + bubble_details.vPerp);
+		console.log("minDiam " + bubble_details.minDiam);
+		console.log("minDiam " + bubble_details.maxDiam);
 	}
 
 	function loadXML(xml) {
@@ -703,7 +709,7 @@
 		 } catch (e) {
 		 //alert("Permission UniversalBrowserRead denied.");
 		 }*/
-
+		
 		var xhttp;
 		if (window.XMLHttpRequest) {
 			console.log("New HTTP Request " + xml);
@@ -911,8 +917,6 @@
 		originalCanWidth = canvasWidth;
 		canWidth = canvasWidth;
 		canHeight = canWidth * 2;
-		//console.log("Set Unwrapped Parameters");
-
 		isUnWrappedVideo = isVideo;
 	};
 
@@ -930,16 +934,16 @@
 			xml_details.cY = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('cy'));
 			xml_details.cX = 1 - xml_details.cX;
 			//xml_details.cY = 1 - xml_details.cY;
-			
+
 			xml_details.innerCircle = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('inner_circle'));
 			xml_details.width = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
 			xml_details.height = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
-		}
-		else
-		{
-			
+			//convertToWebPlayerParams();
+		} else {
+
 		}
 	}
+
 
 }).call(this);
 
