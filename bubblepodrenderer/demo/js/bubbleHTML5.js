@@ -37,7 +37,8 @@
 		height : 0.0,
 		innerCircle : 0.0,
 		flippedX : false,
-		flippedY : false
+		flippedY : false,
+		autoPan : 0.00
 	};
 
 	var renderAnimationFrame;
@@ -303,8 +304,7 @@
 	var sphere = function(reuse) {
 
 		//textureData = textureImageData.data;
-		canvasData = canvasImageData.data;
-		copyFnc;
+		canvasData = canvasImageData.data; copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -588,7 +588,7 @@
 		RZ = (180 - rz);
 		vs = fov;
 		hs = vs * aspect;
-		hs *= 1.25;
+		hs *= 1.5;
 		hhs = 0.5 * hs;
 		hvs = 0.5 * vs;
 		hs_ch = (hs / cWidth);
@@ -619,9 +619,9 @@
 
 		//these will be overwritten if there is xml data)
 		if (isUnWrappedImage) {
-			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 18, 300, isVideo);
+			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 18, 200, isVideo);
 		} else {
-			setEquiParameters(12, 300);
+			setEquiParameters(9, 300);
 		}
 		//setEquiParameters(20, 400);
 		//create sphere with texture
@@ -661,6 +661,9 @@
 		size = gCanvas.width;
 		hs_ch = ((hs) / cWidth);
 		vs_cv = ((vs) / (cHeight));
+
+		if (auto_rotate)
+			xMovement = 0.00002;
 
 		setFOV(FOV);
 		console.log("canHeight: " + cHeight);
@@ -762,6 +765,7 @@
 	//bubble interaction specific variables
 	var bubbleCanvas;
 	var textureClampHeight;
+	var auto_rotate = true;
 	var isUserInteracting = false;
 	var isLeftInteracting = false;
 	var isRightInteracting = false;
@@ -887,6 +891,9 @@
 		yRot = YClamp(yRot);
 		xMovement = 0;
 		yMovement = 0;
+
+		if (auto_rotate)
+			xMovement = 0.00002;
 	}
 
 	var yaya = 0;
@@ -912,6 +919,8 @@
 			eventMouseX = event.clientX;
 			eventMouseY = event.clientY;
 			xMovement = (onMouseDownEventX - eventMouseX) / 10000000;
+			if (auto_rotate)
+				xMovement += 0.00002;
 			yMovement = (onMouseDownEventY - eventMouseY);
 			yRotVal = yMovement + yRot;
 		}
@@ -967,6 +976,7 @@
 			xml_details.innerCircle = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('inner_circle'));
 			xml_details.width = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
 			xml_details.height = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
+			xml_details.autoPan = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('auto')[0].getAttribute('pan_speed'));
 			convertToWebPlayerParams();
 		} else {
 
