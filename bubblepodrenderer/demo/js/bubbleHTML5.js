@@ -26,7 +26,7 @@
 		//initialization values, should be overwritter by calling function setXXXParameters in demo.html
 		uPerp : 0.5,
 		vPerp : 0.5,
-		minDiam : 0.22,
+		minDiam : 0.000001,
 		maxDiam : 0.62
 	};
 
@@ -304,7 +304,8 @@
 	var sphere = function(reuse) {
 
 		//textureData = textureImageData.data;
-		canvasData = canvasImageData.data; copyFnc;
+		canvasData = canvasImageData.data;
+		copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -351,10 +352,10 @@
 				return;
 				stats.firstMs = new Date() - time;
 				this.renderFrame = this.sumRF;
-				console.log(rotCache);
+				//console.log(rotCache);
 				for (var key in rotCache) {
 					if (rotCache[key] > 1) {
-						console.log(rotCache[key]);
+						//console.log(rotCache[key]);
 					}
 				}
 			},
@@ -382,7 +383,7 @@
 				yRotVal = YClamp(yRotVal);
 				var xNumber = xMovement;
 
-				//console.log("Pixels : " + pixel);
+				////console.log("Pixels : " + pixel);
 				var index = 0;
 				while (pixel--) {
 
@@ -410,7 +411,7 @@
 						canvasData[idxC + 3] = 255;
 
 					} else {
-						//console.log( "NULL VECTA")
+						////console.log( "NULL VECTA")
 					}
 				}
 				gCtx.putImageData(canvasImageData, 0, 0);
@@ -422,31 +423,63 @@
 		};
 	};
 
+	function cropBubblePodImage(imageData, outerWidth, outerHeight, innerWidth, innerHeight) {
+		bubble_details.maxDiam = 0.95;
+		bubble_details.minDiam = 0.05;		
+		var innerImageMinDiam = bubble_details.minDiam;
+		var innerImageMaxDiam = bubble_details.maxDiam;
+
+		var imagePixels = imageData.data;
+		var pixelOffset = (outerHeight - innerHeight) / 2;
+		var minPixel = innerHeight * innerImageMinDiam;
+		minPixel += pixelOffset;
+		minPixel = Math.floor(minPixel);
+		var maxPixel = innerHeight * innerImageMaxDiam;
+		maxPixel += pixelOffset;
+		maxPixel = Math.floor(maxPixel);
+		//console.log(minPixel + " min:max " + maxPixel);
+		//console.log(outerHeight + " outWidth:outHeight " + outerWidth);
+
+		var pixelIndex = 0;
+		for (var x = outerWidth; x >= 0; x--) {
+			for (var y = outerHeight - 1; y >= 0; y--) {
+				pixelIndex = (y * outerWidth + x) * 4;
+				if (y < minPixel || y > maxPixel) {
+					imagePixels[pixelIndex + 0] = 0;
+					imagePixels[pixelIndex + 1] = 0;
+					imagePixels[pixelIndex + 2] = 0;
+					imagePixels[pixelIndex + 3] = 255;
+				}
+			}
+		}
+		return imageData.data;
+	}
+
 	function convertToEqui(imageData, width, height, offsetWidth, offsetHeight) {
 		/*
-		console.log("Unwrapped Height" + height);
-		console.log("Unwrapped Width" + width);
-		console.log("Unwrapped HeightOffset" + offsetHeight);
-		console.log("Unwrapped WidthOffset" + offsetWidth);
+		//console.log("Unwrapped Height" + height);
+		//console.log("Unwrapped Width" + width);
+		//console.log("Unwrapped HeightOffset" + offsetHeight);
+		//console.log("Unwrapped WidthOffset" + offsetWidth);
 		*/
 
 		//create new texture from old image
-		console.log("OH: " + offsetHeight);
-		console.log("OW: " + offsetWidth);
+		//console.log("OH: " + offsetHeight);
+		//console.log("OW: " + offsetWidth);
 
 		if (offsetHeight > 0) {
 			var multiplier = (height + offsetHeight * 3) / height;
 			bubble_details.maxDiam /= multiplier;
 			bubble_details.minDiam /= multiplier;
-			console.log("Multiplier: " + multiplier);
+			//console.log("Multiplier: " + multiplier);
 		} else if (offsetWidth > 0) {
 			var multiplier = (width + offsetWidth * 3 ) / width;
 			bubble_details.maxDiam /= multiplier;
 			bubble_details.minDiam /= multiplier;
-			console.log("Multiplier: " + multiplier);
+			//console.log("Multiplier: " + multiplier);
 		}
-		console.log("newMinDiam: " + bubble_details.minDiam);
-		console.log("newMaxDiam: " + bubble_details.maxDiam);
+		//console.log("newMinDiam: " + bubble_details.minDiam);
+		//console.log("newMaxDiam: " + bubble_details.maxDiam);
 		var pixelAmount = 0;
 		var angleOffsetRadians = Math.PI;
 		var fullHeight = width / (2 * Math.PI );
@@ -492,7 +525,7 @@
 			}
 		}
 		var bufIndex = buf.length - 1;
-		//console.log("Pixels affected: " + pixelAmount);
+		////console.log("Pixels affected: " + pixelAmount);
 
 		for (var i = 0; i < height * width * 4; i += 4) {
 			if (i != replacePixel) {
@@ -522,23 +555,23 @@
 			gImage = document.createElement('canvas');
 			textureWidth = aImg.naturalWidth;
 			textureClampHeight = aImg.naturalHeight;
-			console.log("Texture Width = " + aImg.naturalWidth);
+			//console.log("Texture Width = " + aImg.naturalWidth);
 			textureHeight = aImg.naturalWidth;
-			console.log("Texture height = " + aImg.naturalHeight);
+			//console.log("Texture height = " + aImg.naturalHeight);
 			gImage.width = textureWidth;
 			gImage.height = textureHeight;
 			gCtxImg = gImage.getContext("2d");
 			gCtxImg.clearRect(0, 0, textureHeight, textureWidth);
 			gCtxImg.drawImage(aImg, 0, textureWidth / 2 - aImg.naturalHeight / 2);
 			textureImageData = gCtxImg.getImageData(0, 0, textureHeight, textureWidth);
-			textureData = textureImageData.data;
+			textureData = cropBubblePodImage(textureImageData, textureWidth, textureHeight, aImg.naturalWidth, aImg.naturalHeight);
 		} else if (isUnWrappedImage && !isUnWrappedVideo) {
 			// mad bubblepix image
 			gImage = document.createElement('canvas');
 			var max = Math.max(aImg.naturalWidth, aImg.naturalHeight);
-			console.log("Texture Width = " + aImg.naturalWidth);
+			//console.log("Texture Width = " + aImg.naturalWidth);
 			textureClampHeight = aImg.naturalHeight;
-			console.log("Texture height = " + aImg.naturalHeight);
+			//console.log("Texture height = " + aImg.naturalHeight);
 			textureWidth = max;
 			textureHeight = max;
 			gImage.width = max;
@@ -579,7 +612,7 @@
 
 	var frames = 0;
 	function setFOV(fov) {
-		console.log("Changing FOV to " + fov);
+		//console.log("Changing FOV to " + fov);
 		var aspect = cWidth / cHeight;
 		FOV = fov;
 		ry = 90;
@@ -621,7 +654,7 @@
 		if (isUnWrappedImage) {
 			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 18, 200, isVideo);
 		} else {
-			setEquiParameters(9, 300);
+			setEquiParameters(9, 800);
 		}
 		//setEquiParameters(20, 400);
 		//create sphere with texture
@@ -663,11 +696,11 @@
 		vs_cv = ((vs) / (cHeight));
 
 		if (auto_rotate)
-			xMovement = 0.00002;
+			xMovement = 0.000002;
 
 		setFOV(FOV);
-		console.log("canHeight: " + cHeight);
-		console.log("canWidth: " + cWidth);
+		//console.log("canHeight: " + cHeight);
+		//console.log("canWidth: " + cWidth);
 		if (loadTexture && !isUnWrappedVideo) {
 			//loading image for first time
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
@@ -725,32 +758,25 @@
 
 		bubble_details.maxDiam = xml_details.height;
 		bubble_details.minDiam = xml_details.innerCircle * bubble_details.maxDiam;
-		console.log("uPerp " + bubble_details.uPerp);
-		console.log("vPerp " + bubble_details.vPerp);
-		console.log("minDiam " + bubble_details.minDiam);
-		console.log("maxDiam " + bubble_details.maxDiam);
+		//console.log("uPerp " + bubble_details.uPerp);
+		//console.log("vPerp " + bubble_details.vPerp);
+		//console.log("minDiam " + bubble_details.minDiam);
+		//console.log("maxDiam " + bubble_details.maxDiam);
 	}
 
 	function loadXML(xml) {
-		/*
-		 try {
-		 netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
-		 } catch (e) {
-		 //alert("Permission UniversalBrowserRead denied.");
-		 }*/
-
 		var xhttp;
 		if (window.XMLHttpRequest) {
-			console.log("New HTTP Request " + xml);
+			//console.log("New HTTP Request " + xml);
 			xhttp = new XMLHttpRequest();
 
 		} else {
-			console.log("New ActiveX Request");
+			//console.log("New ActiveX Request");
 			xhttp = new ActiveXObject("Microsoft.XMLHTTP");
 		}
 
 		xhttp.open("GET", xml, false);
-		console.log("sending");
+		//console.log("sending");
 		try {
 			xhttp.send(null);
 			return xhttp.responseXML;
@@ -758,7 +784,7 @@
 			alert("ERROR: XML request failed.\n" + e);
 			return false;
 		}
-		console.log("sent");
+		//console.log("sent");
 
 	}
 
@@ -810,7 +836,7 @@
 			el.addEventListener("click", fullScreenButtonClick, false);
 		} else if (el.attachEvent) {
 			el.attachEvent('onclick', fullScreenButtonClick);
-			//console.log(el + " 2");
+			////console.log(el + " 2");
 		}
 		el = null;
 	}
@@ -858,18 +884,6 @@
 	}
 
 	function reload() {
-		/*
-		 textureData = null;
-		 canvasData = null;
-		 gCtx = null;
-		 canvasImageData = null;
-		 gCtxImg = null;
-		 gImage = null;
-		 textureImageData = null;
-		 gCanvas = null;
-		 bubbleCanvas = null;
-		 img = null;
-		 earth = null;*/
 
 		createBubble(document.getElementById("bubble"), "", "");
 	}
@@ -893,7 +907,7 @@
 		yMovement = 0;
 
 		if (auto_rotate)
-			xMovement = 0.00002;
+			xMovement = 0.000002;
 	}
 
 	var yaya = 0;
@@ -919,15 +933,16 @@
 			eventMouseX = event.clientX;
 			eventMouseY = event.clientY;
 			xMovement = (onMouseDownEventX - eventMouseX) / 10000000;
+
 			if (auto_rotate)
-				xMovement += 0.00002;
+				xMovement += 0.000002;
 			yMovement = (onMouseDownEventY - eventMouseY);
 			yRotVal = yMovement + yRot;
 		}
 	}
 
 	function mouseScrollEvent(event) {
-		//console.log("scroll");
+		////console.log("scroll");
 		if (event.wheelDeltaY) {
 			if (event.wheelDeltaY < 0 && FOV < 21)
 				setFOV(34);
@@ -976,10 +991,19 @@
 			xml_details.innerCircle = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('inner_circle'));
 			xml_details.width = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
 			xml_details.height = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
-			xml_details.autoPan = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('auto')[0].getAttribute('pan_speed'));
+
+			var initStartString = xml.getElementsByTagName("play_objects")[0].getElementsByTagName('auto')[0].getAttribute('init_start');
+			;
+			//console.log("initstart = " + initStartString);
+			if (initStartString == 'yes')
+				auto_rotate = true;
+			else
+				auto_rotate = false;
+
 			convertToWebPlayerParams();
 		} else {
-
+			bubble_details.minDiam = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('inner_circle'));
+			bubble_details.maxDiam = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
 		}
 	}
 

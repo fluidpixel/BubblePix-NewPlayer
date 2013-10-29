@@ -9,9 +9,9 @@
 		<link href="style.css" rel="stylesheet">
 		<script>
 			function go() {
-				var textureUrl = "tom.jpg";
+				var textureUrl = "result.jpg";
 				var textureXml = "xml.xml";
-				var isEqui = false;
+				var isEqui = true;
 				
 				initHTML5(isEqui, textureUrl, textureXml);
 				
@@ -23,7 +23,7 @@
 				document.getElementById("fps").appendChild(stats.getDomElement());
 				setInterval(function() {
 					stats.update();
-				}, 1000 / 300);
+				}, 1000 / 30);
 			}
 		</script>
 	</head>
