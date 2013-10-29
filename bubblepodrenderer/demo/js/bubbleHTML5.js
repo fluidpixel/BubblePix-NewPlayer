@@ -425,7 +425,7 @@
 
 	function cropBubblePodImage(imageData, outerWidth, outerHeight, innerWidth, innerHeight) {
 		bubble_details.maxDiam = 0.95;
-		bubble_details.minDiam = 0.05;		
+		bubble_details.minDiam = 0.2;
 		var innerImageMinDiam = bubble_details.minDiam;
 		var innerImageMaxDiam = bubble_details.maxDiam;
 
@@ -437,21 +437,60 @@
 		var maxPixel = innerHeight * innerImageMaxDiam;
 		maxPixel += pixelOffset;
 		maxPixel = Math.floor(maxPixel);
-		//console.log(minPixel + " min:max " + maxPixel);
-		//console.log(outerHeight + " outWidth:outHeight " + outerWidth);
+		console.log(minPixel + " min:max " + maxPixel);
+		console.log(outerHeight + " outWidth:outHeight " + outerWidth);
+		var buf = [];
 
 		var pixelIndex = 0;
-		for (var x = outerWidth; x >= 0; x--) {
-			for (var y = outerHeight - 1; y >= 0; y--) {
+		for (var x = 0; x < outerWidth; x++) {
+			for (var y = 0; y < outerHeight; y++) {
 				pixelIndex = (y * outerWidth + x) * 4;
 				if (y < minPixel || y > maxPixel) {
 					imagePixels[pixelIndex + 0] = 0;
 					imagePixels[pixelIndex + 1] = 0;
 					imagePixels[pixelIndex + 2] = 0;
 					imagePixels[pixelIndex + 3] = 255;
+				} else {
+
+					var xPix = imagePixels[pixelIndex];
+					var yPix = imagePixels[pixelIndex + 1];
+					var zPix = imagePixels[pixelIndex + 2];
+					var wPix = 255;
+					buf.push(xPix);
+					buf.push(yPix);
+					buf.push(zPix);
+					buf.push(wPix);
+
+					imagePixels[pixelIndex + 0] = 0;
+					imagePixels[pixelIndex + 1] = 0;
+					imagePixels[pixelIndex + 2] = 0;
+					imagePixels[pixelIndex + 3] = 255;
+
 				}
 			}
 		}
+
+		//redraw & reposition
+
+		var newHeight = maxPixel - minPixel;
+		var startPixel = Math.floor(outerHeight / 2 - newHeight / 2);
+		var bufferIndex = 0;
+		console.log("Start Y "  + startPixel);
+		console.log("New Height "  + newHeight);
+		console.log("OuterHeight"  + outerHeight);
+		for (var u = 0; u < outerWidth; u++) {
+			for (var v = 0; v < outerHeight; v++) {
+				pixelIndex = (v * outerWidth + u) * 4;
+				if (v >= startPixel && v <= startPixel+newHeight) {
+					imagePixels[pixelIndex + 0] = buf[bufferIndex + 0];
+					imagePixels[pixelIndex + 1] = buf[bufferIndex + 1];
+					imagePixels[pixelIndex + 2] = buf[bufferIndex + 2];
+					imagePixels[pixelIndex + 3] = buf[bufferIndex + 3];
+					bufferIndex += 4;
+				}
+			}
+		}
+		buf = null;
 		return imageData.data;
 	}
 
