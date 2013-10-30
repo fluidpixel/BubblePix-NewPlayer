@@ -152,7 +152,7 @@
 	// vector for storing direction of each pixel from F
 	var L = new Array(3);
 	// Location vector from S that pixel 'hits' sphere
-
+	var lastTime = 0;
 	var VY2 = f * f;
 	// V[Y] ^2  NB May change if F changes
 
@@ -306,8 +306,7 @@
 	var sphere = function(reuse) {
 
 		//textureData = textureImageData.data;
-		canvasData = canvasImageData.data;
-		copyFnc;
+		canvasData = canvasImageData.data; copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -339,8 +338,6 @@
 				return cache[pixel];
 			};
 		})();
-
-		
 
 		var posDelta = textureWidth / (20 * 1000);
 		var firstFramePos = (new Date()) * posDelta;
@@ -379,8 +376,7 @@
 				// RX, RY & RZ may change part way through if the newR? (change tilt/turn) meathods are called while
 				// this meathod is running so put them in temp vars at render start.
 				// They also need converting from degrees to radians
-				console.log("Rendering");
-				
+
 				rx = RX * Math.PI / 180;
 				ry = RY * Math.PI / 180;
 				rz = RZ * Math.PI / 180;
@@ -389,8 +385,9 @@
 				var pixel = cWidth * cHeight;
 
 				yRotVal = YClamp(yRotVal);
+				var xRotNumber = xRot;
 				var xNumber = xMovement;
-				
+
 				var index = 0;
 				while (pixel--) {
 
@@ -399,8 +396,9 @@
 						//rotate texture on sphere
 
 						//XAxis Rotation
-						var lh = Math.floor(vector.lh + xRot);
-						xRot += xNumber;
+						//xRot*=firstFramePos - time * posDelta;
+						var lh = Math.floor(vector.lh + xRotNumber);
+
 						//YAxis Rotation
 						var lv;
 						if (!isUnWrappedImage) {
@@ -421,8 +419,10 @@
 						////console.log( "NULL VECTA")
 					}
 				}
+				xRot += xNumber * 50000 * (time -lastTime)*posDelta;
 				gCtx.putImageData(canvasImageData, 0, 0);
-
+				//console.log(xRot + " : " + (time - lastTime  ));
+				lastTime = time;
 				//canvasData = null;
 				//textureData  = null;
 				//copyFnc = null;
