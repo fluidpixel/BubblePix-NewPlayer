@@ -170,8 +170,10 @@
 		}
 	}
 
+	//only gets called on sphere init
 	var calculateVector = function(h, v) {
 		// Calculate vector from focus point (Origin, so can ignor) to pixel
+
 		V[X] = (hs_ch * h) - hhs;
 
 		// V[Y] always the same as view frame doesn't mov
@@ -300,7 +302,7 @@
 	/**
 	 * Create the sphere function opject
 	 */
-	var cache;
+	var cache = undefined;
 	var sphere = function(reuse) {
 
 		//textureData = textureImageData.data;
@@ -331,11 +333,14 @@
 						var v = Math.floor(pixel / cWidth);
 						var h = pixel - v * cWidth;
 						cache[pixel] = calculateVector(h, v);
+
 					}
 				}
 				return cache[pixel];
 			};
 		})();
+
+		
 
 		var posDelta = textureWidth / (20 * 1000);
 		var firstFramePos = (new Date()) * posDelta;
@@ -369,10 +374,13 @@
 				}
 			},
 
+			//gets called every frame
 			RF : function(time) {
 				// RX, RY & RZ may change part way through if the newR? (change tilt/turn) meathods are called while
 				// this meathod is running so put them in temp vars at render start.
 				// They also need converting from degrees to radians
+				console.log("Rendering");
+				
 				rx = RX * Math.PI / 180;
 				ry = RY * Math.PI / 180;
 				rz = RZ * Math.PI / 180;
@@ -382,8 +390,7 @@
 
 				yRotVal = YClamp(yRotVal);
 				var xNumber = xMovement;
-
-				////console.log("Pixels : " + pixel);
+				
 				var index = 0;
 				while (pixel--) {
 
@@ -392,7 +399,7 @@
 						//rotate texture on sphere
 
 						//XAxis Rotation
-						var lh = Math.floor(vector.lh + xRot) % textureWidth;
+						var lh = Math.floor(vector.lh + xRot);
 						xRot += xNumber;
 						//YAxis Rotation
 						var lv;
@@ -424,8 +431,8 @@
 	};
 
 	function cropBubblePodImage(imageData, outerWidth, outerHeight, innerWidth, innerHeight) {
-		bubble_details.maxDiam = 0.95;
-		bubble_details.minDiam = 0.2;
+		bubble_details.maxDiam = 0.9;
+		bubble_details.minDiam = 0.1;
 		var innerImageMinDiam = bubble_details.minDiam;
 		var innerImageMaxDiam = bubble_details.maxDiam;
 
@@ -475,13 +482,13 @@
 		var newHeight = maxPixel - minPixel;
 		var startPixel = Math.floor(outerHeight / 2 - newHeight / 2);
 		var bufferIndex = 0;
-		console.log("Start Y "  + startPixel);
-		console.log("New Height "  + newHeight);
-		console.log("OuterHeight"  + outerHeight);
+		console.log("Start Y " + startPixel);
+		console.log("New Height " + newHeight);
+		console.log("OuterHeight" + outerHeight);
 		for (var u = 0; u < outerWidth; u++) {
-			for (var v = 0; v < outerHeight; v++) {
+			for (var v = startPixel; v <= startPixel + newHeight; v++) {
 				pixelIndex = (v * outerWidth + u) * 4;
-				if (v >= startPixel && v <= startPixel+newHeight) {
+				if (v >= startPixel && v <= startPixel + newHeight) {
 					imagePixels[pixelIndex + 0] = buf[bufferIndex + 0];
 					imagePixels[pixelIndex + 1] = buf[bufferIndex + 1];
 					imagePixels[pixelIndex + 2] = buf[bufferIndex + 2];
@@ -588,64 +595,75 @@
 	}
 
 	function copyImageToBuffer(aImg) {
+		var needsReloading = false;
+		if (originalImage === undefined || isUnWrappedVideo) {
+			originalImage = aImg;
+			needsReloading = true;
+		}
 
-		originalImage = aImg;
 		if (!isUnWrappedImage) {//bubblepod image
-			gImage = document.createElement('canvas');
-			textureWidth = aImg.naturalWidth;
-			textureClampHeight = aImg.naturalHeight;
-			//console.log("Texture Width = " + aImg.naturalWidth);
-			textureHeight = aImg.naturalWidth;
-			//console.log("Texture height = " + aImg.naturalHeight);
-			gImage.width = textureWidth;
-			gImage.height = textureHeight;
-			gCtxImg = gImage.getContext("2d");
-			gCtxImg.clearRect(0, 0, textureHeight, textureWidth);
-			gCtxImg.drawImage(aImg, 0, textureWidth / 2 - aImg.naturalHeight / 2);
-			textureImageData = gCtxImg.getImageData(0, 0, textureHeight, textureWidth);
-			textureData = cropBubblePodImage(textureImageData, textureWidth, textureHeight, aImg.naturalWidth, aImg.naturalHeight);
+			if (needsReloading) {
+				gImage = document.createElement('canvas');
+				textureWidth = aImg.naturalWidth;
+				textureClampHeight = aImg.naturalHeight;
+				//console.log("Texture Width = " + aImg.naturalWidth);
+				textureHeight = aImg.naturalWidth;
+				//console.log("Texture height = " + aImg.naturalHeight);
+				gImage.width = textureWidth;
+				gImage.height = textureHeight;
+				gCtxImg = gImage.getContext("2d");
+				gCtxImg.clearRect(0, 0, textureHeight, textureWidth);
+				gCtxImg.drawImage(aImg, 0, textureWidth / 2 - aImg.naturalHeight / 2);
+				textureImageData = gCtxImg.getImageData(0, 0, textureHeight, textureWidth);
+				gCtxImg = null;
+				textureData = cropBubblePodImage(textureImageData, textureWidth, textureHeight, aImg.naturalWidth, aImg.naturalHeight);
+			}
 		} else if (isUnWrappedImage && !isUnWrappedVideo) {
 			// mad bubblepix image
-			gImage = document.createElement('canvas');
-			var max = Math.max(aImg.naturalWidth, aImg.naturalHeight);
-			//console.log("Texture Width = " + aImg.naturalWidth);
-			textureClampHeight = aImg.naturalHeight;
-			//console.log("Texture height = " + aImg.naturalHeight);
-			textureWidth = max;
-			textureHeight = max;
-			gImage.width = max;
-			gImage.height = max;
-			gCtxImg = gImage.getContext("2d");
-			gCtxImg.clearRect(0, 0, max, max);
-			gCtxImg.drawImage(aImg, Math.floor((max - aImg.naturalWidth) / 2), Math.floor((max - aImg.naturalHeight) / 2));
-			textureImageData = gCtxImg.getImageData(0, 0, textureWidth, textureHeight);
-			textureImageData = convertToEqui(textureImageData, textureWidth, textureHeight, Math.floor((max - aImg.naturalWidth) / 2), Math.floor((max - aImg.naturalHeight) / 2));
-			textureData = textureImageData.data;
+			if (needsReloading) {
+				gImage = document.createElement('canvas');
+				var max = Math.max(aImg.naturalWidth, aImg.naturalHeight);
+				//console.log("Texture Width = " + aImg.naturalWidth);
+				textureClampHeight = aImg.naturalHeight;
+				//console.log("Texture height = " + aImg.naturalHeight);
+				textureWidth = max;
+				textureHeight = max;
+				gImage.width = max;
+				gImage.height = max;
+				gCtxImg = gImage.getContext("2d");
+				gCtxImg.clearRect(0, 0, max, max);
+				gCtxImg.drawImage(aImg, Math.floor((max - aImg.naturalWidth) / 2), Math.floor((max - aImg.naturalHeight) / 2));
+				textureImageData = gCtxImg.getImageData(0, 0, textureWidth, textureHeight);
+				textureImageData = convertToEqui(textureImageData, textureWidth, textureHeight, Math.floor((max - aImg.naturalWidth) / 2), Math.floor((max - aImg.naturalHeight) / 2));
+				textureData = textureImageData.data;
+			}
 		} else {
 			//video
-			gImage = document.createElement('canvas');
-			backcvs = document.getElementById('backCanvas');
-			bcv = backcvs.getContext("2d");
-			var max = Math.max(cWidth, cHeight);
-			bcv.drawImage(aImg, 0, 0, cWidth, cHeight);
-			var apx = bcv.getImageData(0, 0, cWidth, cHeight);
-			var vidHeight = backcvs.height;
-			var vidWidth = backcvs.width;
+			if (needsReloading) {
+				gImage = document.createElement('canvas');
+				backcvs = document.getElementById('backCanvas');
+				bcv = backcvs.getContext("2d");
+				var max = Math.max(cWidth, cHeight);
+				bcv.drawImage(aImg, 0, 0, cWidth, cHeight);
+				var apx = bcv.getImageData(0, 0, cWidth, cHeight);
+				var vidHeight = backcvs.height;
+				var vidWidth = backcvs.width;
 
-			textureWidth = max;
-			textureHeight = max;
-			gImage.width = max;
-			gImage.height = max;
-			gCtxImg = gImage.getContext("2d");
-			gCtxImg.clearRect(0, 0, max, max);
-			gCtxImg.putImageData(apx, Math.floor((max - cWidth) / 2), Math.floor((max - cHeight) / 2));
-			//gCtxImg.drawImage(aImg, 0, 0);
-			textureImageData = gCtxImg.getImageData(0, 0, max, max);
+				textureWidth = max;
+				textureHeight = max;
+				gImage.width = max;
+				gImage.height = max;
+				gCtxImg = gImage.getContext("2d");
+				gCtxImg.clearRect(0, 0, max, max);
+				gCtxImg.putImageData(apx, Math.floor((max - cWidth) / 2), Math.floor((max - cHeight) / 2));
+				//gCtxImg.drawImage(aImg, 0, 0);
+				textureImageData = gCtxImg.getImageData(0, 0, max, max);
 
-			frames++;
-			textureImageData = convertToEqui(textureImageData, max, max, Math.floor((max - cWidth) / 2), Math.floor((max - cHeight) / 2));
-			setTimeout(copyImageToBuffer, 0, aImg);
-			textureData = textureImageData.data;
+				frames++;
+				textureImageData = convertToEqui(textureImageData, max, max, Math.floor((max - cWidth) / 2), Math.floor((max - cHeight) / 2));
+				setTimeout(copyImageToBuffer, 0, aImg);
+				textureData = textureImageData.data;
+			}
 		}
 	}
 
@@ -691,9 +709,9 @@
 
 		//these will be overwritten if there is xml data)
 		if (isUnWrappedImage) {
-			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 18, 200, isVideo);
+			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 18, 244, isVideo);
 		} else {
-			setEquiParameters(9, 800);
+			setEquiParameters(9, 244);
 		}
 		//setEquiParameters(20, 400);
 		//create sphere with texture
@@ -850,7 +868,7 @@
 	var originalCanWidth = 200;
 	var canWidth = originalCanWidth;
 	var canHeight = originalCanWidth * 2;
-	var originalImage;
+	var originalImage = undefined;
 
 	var isUnWrappedImage = false;
 	var isUnWrappedVideo = false;

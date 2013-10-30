@@ -868,6 +868,7 @@
             else if (isUserInteracting) {
                 //Rotation of sphere in function of the mouse move
 				movementX = (eventMouseX - onMouseDownMouseX);
+				
 				movementX = -movementX>0 ? -movementX : movementX;
 
 				movementY = (eventMouseY - onMouseDownMouseY);
