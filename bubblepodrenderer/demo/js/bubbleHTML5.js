@@ -27,7 +27,8 @@
 		uPerp : 0.5,
 		vPerp : 0.5,
 		minDiam : 0.000001,
-		maxDiam : 0.62
+		maxDiam : 0.62,
+		MAX_WIDTH: 4096
 	};
 
 	var xml_details = {
@@ -306,7 +307,8 @@
 	var sphere = function(reuse) {
 
 		//textureData = textureImageData.data;
-		canvasData = canvasImageData.data; copyFnc;
+		canvasData = canvasImageData.data;
+		copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -419,7 +421,10 @@
 						////console.log( "NULL VECTA")
 					}
 				}
-				xRot += xNumber * 50000 * (time -lastTime)*posDelta;
+				var multiplier = 50000;
+				if (isFullScreen)
+					multiplier /= 3;
+				xRot += xNumber * multiplier * (time - lastTime) * posDelta;
 				gCtx.putImageData(canvasImageData, 0, 0);
 				//console.log(xRot + " : " + (time - lastTime  ));
 				lastTime = time;
@@ -478,7 +483,6 @@
 		}
 
 		//redraw & reposition
-
 		var newHeight = maxPixel - minPixel;
 		var startPixel = Math.floor(outerHeight / 2 - newHeight / 2);
 		var bufferIndex = 0;
@@ -603,20 +607,58 @@
 
 		if (!isUnWrappedImage) {//bubblepod image
 			if (needsReloading) {
+
+				var newWidth = aImg.width;
+				var newHeight = aImg.height;
+				var oldWidth = aImg.width;
+				var resize = false;
+			
+				if (oldWidth > bubble_details.MAX_WIDTH) {
+					newHeight *= bubble_details.MAX_WIDTH / newWidth;
+					newWidth = bubble_details.MAX_WIDTH;
+					resize = true;
+				}
 				gImage = document.createElement('canvas');
-				textureWidth = aImg.naturalWidth;
+				var newImageData = undefined;
+				if (resize) {
+					newWidth = Math.floor(newWidth);
+					newHeight = Math.floor(newHeight);
+					gImage.width = newWidth;
+					gImage.height = newHeight;
+					gCtxImg = gImage.getContext("2d");
+					gCtxImg.clearRect(0, 0, newWidth, newHeight);
+					gCtxImg.drawImage(aImg, 0, 0, newWidth, newHeight);
+					newImageData = gCtxImg.getImageData(0, 0, newWidth, newHeight);
+					//var newData = newImageData.zz
+					//console.log("NEWIMAGEDATA: " + newImageData.data.length);
+					console.log("Have Resized Image");
+					gCtxImg.clearRect(0, 0, newWidth, newHeight);
+					console.log("NEWIMAGEDATA: " + newImageData.data.length);
+				}
+				var max = Math.max(newWidth, newHeight);
+				textureWidth = max;
 				textureClampHeight = aImg.naturalHeight;
-				//console.log("Texture Width = " + aImg.naturalWidth);
-				textureHeight = aImg.naturalWidth;
-				//console.log("Texture height = " + aImg.naturalHeight);
+				console.log("Texture Width = " + newWidth);
+				textureHeight = max;
+				console.log("Texture height = " + newHeight);
 				gImage.width = textureWidth;
 				gImage.height = textureHeight;
-				gCtxImg = gImage.getContext("2d");
+				//gCtxImg = gImage.getContext("2d");
 				gCtxImg.clearRect(0, 0, textureHeight, textureWidth);
-				gCtxImg.drawImage(aImg, 0, textureWidth / 2 - aImg.naturalHeight / 2);
+
+				if (resize) {
+					gCtxImg.putImageData(newImageData, Math.floor((max - newWidth) / 2), Math.floor((max - newHeight) / 2));
+				} else {
+					gCtxImg.drawImage(aImg, 0, textureWidth / 2 - aImg.naturalHeight / 2);
+				}
 				textureImageData = gCtxImg.getImageData(0, 0, textureHeight, textureWidth);
 				gCtxImg = null;
-				textureData = cropBubblePodImage(textureImageData, textureWidth, textureHeight, aImg.naturalWidth, aImg.naturalHeight);
+				textureData = textureImageData.data;
+
+				/*
+				 originalImage = null;
+				 aImg = null;*/
+
 			}
 		} else if (isUnWrappedImage && !isUnWrappedVideo) {
 			// mad bubblepix image
