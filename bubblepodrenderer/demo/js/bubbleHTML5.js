@@ -28,7 +28,7 @@
 		vPerp : 0.5,
 		minDiam : 0.000001,
 		maxDiam : 0.62,
-		MAX_WIDTH: 4096
+		MAX_WIDTH: 2048
 	};
 
 	var xml_details = {
@@ -753,7 +753,7 @@
 		if (isUnWrappedImage) {
 			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 18, 244, isVideo);
 		} else {
-			setEquiParameters(9, 244);
+			setEquiParameters(20, 244);
 		}
 		//setEquiParameters(20, 400);
 		//create sphere with texture
@@ -989,17 +989,43 @@
 
 	function mouseDownEvent(event) {
 		event.preventDefault();
-		eventMouseX = event.clientX;
-		eventMouseY = event.clientY;
+		if(event.touches != undefined)
+		{
+			eventMouseX = event.touches[0].clientX
+		}
+		else
+		{
+			eventMouseX = event.clientX;	
+		}
+		//eventMouseY = event.clientY;
 		isUserInteracting = true;
-		onMouseDownEventX = event.clientX;
-		onMouseDownEventY = event.clientY;
+		
+		if(event.touches != undefined)
+		{
+			onMouseDownEventX = event.touches[0].clientX
+		}
+		else
+		{
+			onMouseDownEventX = event.clientX;	
+		}
+		
+		//onMouseDownEventX = event.clientX;
+		//onMouseDownEventY = event.clientY;
 	}
 
 	function mouseUpEvent(event) {
+		console.log("touch end");
 		isUserInteracting = false;
-		eventMouseX = event.clientX;
-		eventMouseY = event.clientY;
+		if(event.touches != undefined)
+		{
+			//eventMouseX = eventMouseX;
+			console.log("touch: " + eventMouseX);
+		}
+		else
+		{
+			eventMouseX = event.clientX;	
+		}
+		//eventMouseY = event.clientY;
 		yRot += yMovement;
 		yRot = YClamp(yRot);
 		xMovement = 0;
@@ -1021,22 +1047,36 @@
 
 	function mouseOutEvent(event) {
 		event.preventDefault();
-		eventMouseX = event.clientX;
-		eventMouseY = event.clientY;
+		if(event.touches != undefined)
+		{
+			eventMouseX = event.touches[0].clientX
+		}
+		else
+		{
+			eventMouseX = event.clientX;	
+		}
+		//eventMouseY = event.clientY;
 	}
 
 	var yRotVal = 0;
 	function mouseMoveEvent(event) {
 		event.preventDefault();
 		if (isUserInteracting) {
-			eventMouseX = event.clientX;
-			eventMouseY = event.clientY;
+			if(event.touches != undefined)
+			{
+				eventMouseX = event.touches[0].clientX
+			}
+			else
+			{
+				eventMouseX = event.clientX;	
+			}
+			//eventMouseY = event.clientY;
 			xMovement = (onMouseDownEventX - eventMouseX) / 10000000;
 
 			if (auto_rotate)
 				xMovement += 0.000002;
-			yMovement = (onMouseDownEventY - eventMouseY);
-			yRotVal = yMovement + yRot;
+			//yMovement = (onMouseDownEventY - eventMouseY);
+			//yRotVal = yMovement + yRot;
 		}
 	}
 
