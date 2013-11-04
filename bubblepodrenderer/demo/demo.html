@@ -6,6 +6,7 @@
 		<script src="js/Stats.js"></script>
 		<script src="js/requestanimationframe.polyfill.js"></script>
 		<script src="js/bubbleHTML5.js"></script>
+		<script src="js/cache.js"></script>
 		<link href="style.css" rel="stylesheet">
 		<script>
 			function go() {
@@ -13,7 +14,11 @@
 				var textureXml = "xml.xml";
 				var isEqui = true;
 				
-				initHTML5(isEqui, textureUrl, textureXml);
+				/*
+				var smallScreen = new SmallScreen();
+								var fullScreen = new FullScreen();*/
+				
+				initHTML5(isEqui, textureUrl, textureXml,244,4096, null, null);
 				
 				var stats = new Stats();
 				stats.getDomElement().style.position = 'relative';

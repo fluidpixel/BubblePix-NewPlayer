@@ -16,6 +16,8 @@
 
 (function() {"use strict";
 
+	var timerStart = new Date().getTime();
+
 	var opts = {
 		tilt : 0,
 		turn : 0,
@@ -171,6 +173,36 @@
 		}
 	}
 
+	function onInitFs(fs) {
+
+		fs.root.getFile('log.txt', {
+			create : true
+		}, function(fileEntry) {
+
+			// Create a FileWriter object for our FileEntry (log.txt).
+			fileEntry.createWriter(function(fileWriter) {
+
+				fileWriter.onwriteend = function(e) {
+					console.log('Write completed.');
+				};
+
+				fileWriter.onerror = function(e) {
+					console.log('Write failed: ' + e.toString());
+				};
+
+				// Create a new Blob and write it to log.txt.
+				var blob = new Blob(['Lorem Ipsum'], {
+					type : 'text/plain'
+				});
+
+				fileWriter.write(blob);
+
+			}, errorHandler);
+
+		}, errorHandler);
+
+	}
+
 	//only gets called on sphere init
 	var calculateVector = function(h, v) {
 		// Calculate vector from focus point (Origin, so can ignor) to pixel
@@ -291,7 +323,7 @@
 
 			var lh = textureWidth + textureWidth * (Math.atan2(L[Y], L[X]) + Math.PI ) / (2 * Math.PI);
 			var lv = textureWidth * Math.floor(textureHeight - 1 - (textureHeight * (Math.acos(L[Z] / r) / Math.PI) % textureHeight));
-
+			//console.log("lh " + lh + " lv " + lv);
 			return {
 				lv : lv,
 				lh : lh
@@ -303,6 +335,8 @@
 	/**
 	 * Create the sphere function opject
 	 */
+	var fullScreenCache = undefined;
+	var smallScreenCache = undefined;
 	var cache = undefined;
 	var sphere = function(reuse) {
 
@@ -324,19 +358,71 @@
 		}
 
 		var getVector = (function() {
-			if (!reuse) {
-				cache = new Array(cWidth * cHeight);
+			if (isFullScreen) {
+				if (fullScreenCache === undefined)
+					fullScreenCache = new Array(cWidth * cHeight);
+			} else {
+				if (smallScreenCache === undefined)
+					smallScreenCache = new Array(cWidth * cHeight);
 			}
 			return function(pixel) {
-				if (cache[pixel] === undefined) {
-					if (!reuse) {
-						var v = Math.floor(pixel / cWidth);
-						var h = pixel - v * cWidth;
-						cache[pixel] = calculateVector(h, v);
+				if (isFullScreen) {
+					if (fullScreenCache[pixel] === undefined) {
+						if (!reuse) {
+							var v = Math.floor(pixel / cWidth);
+							var h = pixel - v * cWidth;
+							if (pixel == 0) {
+								var diff = (new Date().getTime() - timerStart);
+								console.log("Time Taken T Load to 0: " + diff);
+							}
+							if (pixel == (cWidth * cHeight) - 1) {
+								var diff = (new Date().getTime() - timerStart);
+								console.log("Time Taken TO Load to pixel length: " + diff);
+							}
+							fullScreenCache[pixel] = calculateVector(h, v);
 
+						}
 					}
+					return fullScreenCache[pixel];
+
+				} else {
+					if (smallScreenCache[pixel] === undefined) {
+						if (!reuse) {
+							var v = Math.floor(pixel / cWidth);
+							var h = pixel - v * cWidth;
+							if (pixel == 0) {
+								var diff = (new Date().getTime() - timerStart);
+								console.log("Time Taken T Load to 0: " + diff);
+							}
+							if (pixel == (cWidth * cHeight) - 1) {
+								var diff = (new Date().getTime() - timerStart);
+								console.log("Time Taken TO Load to pixel length: " + diff);
+							}
+							smallScreenCache[pixel] = calculateVector(h, v);
+
+						}
+					}
+					return smallScreenCache[pixel];
 				}
-				return cache[pixel];
+				/*
+				 if (cache[pixel] === undefined) {
+				 if (!reuse) {
+				 var v = Math.floor(pixel / cWidth);
+				 var h = pixel - v * cWidth;
+				 if (pixel == 0) {
+				 var diff = (new Date().getTime() - timerStart);
+				 console.log("Time Taken T Load to 0: " + diff);
+				 }
+				 if (pixel == (cWidth * cHeight) - 1) {
+				 var diff = (new Date().getTime() - timerStart);
+				 console.log("Time Taken TO Load to pixel length: " + diff);
+				 }
+				 cache[pixel] = calculateVector(h, v);
+
+				 }
+				 }
+				 return cache[pixel];*/
+
 			};
 		})();
 
@@ -409,11 +495,11 @@
 						//YAxis Rotation
 						var lv;
 						/*
-						if (!isUnWrappedImage) {
-													lv = (vector.lv + (textureHeight * (yRotVal)));
-												} else*/
-						
-							lv = (vector.lv);
+						 if (!isUnWrappedImage) {
+						 lv = (vector.lv + (textureHeight * (yRotVal)));
+						 } else*/
+
+						lv = (vector.lv);
 
 						var idxC = Math.floor(pixel * 4);
 
@@ -444,6 +530,18 @@
 			}
 		};
 	};
+
+	function readFromCache() {
+		if (textureWidth == 8192) {
+		} else if (textureWidth == 4096) {
+
+		} else if (textureWidth == 2048) {
+
+		} else {
+			//not valid image;
+		}
+
+	}
 
 	function cropBubblePodImage(imageData, outerWidth, outerHeight, innerWidth, innerHeight) {
 		bubble_details.maxDiam = 0.9;
@@ -748,14 +846,14 @@
 		b2 = Math.pow(b, 2);
 	}
 
-
-	this.initHTML5 = function(isEqui, textureUrl, textureXMLUrl, canvasWidth, textureResizeWidth) {
+	var errorHandler;
+	this.initHTML5 = function(isEqui, textureUrl, textureXMLUrl, canvasWidth, textureResizeWidth, sScreenCache, fScreenCache) {
 		//Set parameters functions for EITHER unwrapped(bubblepix) image (A), or Equi Parameters (B) for Equirectangular images
 		//Must be set before createSphere is called
 
 		//A: setUnwrappedParameters (uPerpendicular, vPerpendicular, minDiameter, maxDiameter, fov, canvasWidth)
 		//B: setEquiParameters(FOV,canvasWidth);
-
+		//window.requestFileSystem(window.TEMPORARY, 1024 * 1024, onInitFs, errorHandler);
 		if (canvasWidth == 0) {
 			canvasWidth = 244;
 		}
@@ -792,6 +890,7 @@
 	var xmlData;
 	var bcWidth;
 	var bcHeight;
+	
 	this.createBubble = function(gCanvas, textureUrl, xmlURL) {
 		var loadTexture = false;
 		if (img === undefined) {
@@ -833,12 +932,13 @@
 				earth = sphere(false);
 				renderAnimationFrame = function(time) {
 					earth.renderFrame(time);
-					window.requestAnimationFrame(renderAnimationFrame);
+					setTimeout(window.requestAnimationFrame, 10, renderAnimationFrame);
 				};
 				window.requestAnimationFrame(renderAnimationFrame);
 				cancelLoadingScreen();
 			};
 			img.setAttribute("src", textureUrl);
+
 		} else if (loadTexture && isUnWrappedVideo) {
 			//loading video for first time
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
@@ -854,10 +954,11 @@
 			earth = sphere(false);
 			renderAnimationFrame = function(time) {
 				earth.renderFrame(time);
-				window.requestAnimationFrame(renderAnimationFrame);
+				setTimeout(window.requestAnimationFrame, 10, renderAnimationFrame);
 			};
 			window.requestAnimationFrame(renderAnimationFrame);
 			cancelLoadingScreen();
+
 		} else if (!loadTexture && isUnWrappedVideo) {
 			//reloading video
 			video.load();
@@ -865,12 +966,16 @@
 			copyImageToBuffer(originalImage);
 			earth = sphere(false);
 			cancelLoadingScreen();
+			//window.requestAnimationFrame(renderAnimationFrame);
+
 		} else {
 			//reloading image
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			copyImageToBuffer(originalImage);
 			earth = sphere(false);
 			cancelLoadingScreen();
+			//window.requestAnimationFrame(renderAnimationFrame);
+
 		}
 
 	};
@@ -969,11 +1074,13 @@
 	function cancelLoadingScreen() {
 
 	}
+
 	function showLoadingScreen() {
 
 	}
 
 	function fullScreenButtonClick() {
+		timerStart = new Date().getTime();
 		showLoadingScreen();
 		if (isFullScreen) {
 			var el = document.getElementById("bubbleViewer");
