@@ -28,7 +28,7 @@
 		vPerp : 0.5,
 		minDiam : 0.000001,
 		maxDiam : 0.62,
-		MAX_WIDTH: 4096
+		MAX_WIDTH : 4096 * 2
 	};
 
 	var xml_details = {
@@ -307,8 +307,7 @@
 	var sphere = function(reuse) {
 
 		//textureData = textureImageData.data;
-		canvasData = canvasImageData.data;
-		copyFnc;
+		canvasData = canvasImageData.data; copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -373,7 +372,7 @@
 				}
 			},
 
-			//gets called every frame
+			//gets called every framze
 			RF : function(time) {
 				// RX, RY & RZ may change part way through if the newR? (change tilt/turn) meathods are called while
 				// this meathod is running so put them in temp vars at render start.
@@ -612,7 +611,7 @@
 				var newHeight = aImg.height;
 				var oldWidth = aImg.width;
 				var resize = false;
-			
+
 				if (oldWidth > bubble_details.MAX_WIDTH) {
 					newHeight *= bubble_details.MAX_WIDTH / newWidth;
 					newWidth = bubble_details.MAX_WIDTH;
@@ -643,7 +642,7 @@
 				console.log("Texture height = " + newHeight);
 				gImage.width = textureWidth;
 				gImage.height = textureHeight;
-				//gCtxImg = gImage.getContext("2d");
+				gCtxImg = gImage.getContext("2d");
 				gCtxImg.clearRect(0, 0, textureHeight, textureWidth);
 
 				if (resize) {
@@ -652,13 +651,21 @@
 					gCtxImg.drawImage(aImg, 0, textureWidth / 2 - aImg.naturalHeight / 2);
 				}
 				textureImageData = gCtxImg.getImageData(0, 0, textureHeight, textureWidth);
+				gCtxImg.clearRect(0, 0, textureHeight, textureWidth);
+				gCtxImg = undefined;
+				aImg = undefined;
+				originalImage = undefined;
+				gImage = undefined;
+				newImageData = undefined;
 				gCtxImg = null;
+				aImg = null;
+				originalImage = null;
+				gImage = null;
+				newImageData = null;
 				textureData = textureImageData.data;
-
 				/*
 				 originalImage = null;
 				 aImg = null;*/
-
 			}
 		} else if (isUnWrappedImage && !isUnWrappedVideo) {
 			// mad bubblepix image
@@ -753,7 +760,7 @@
 		if (isUnWrappedImage) {
 			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 18, 244, isVideo);
 		} else {
-			setEquiParameters(9, 244);
+			setEquiParameters(15, 244);
 		}
 		//setEquiParameters(20, 400);
 		//create sphere with texture
@@ -972,7 +979,7 @@
 			el.style.width = "100%";
 
 			//double or treble canvas width and height for full screen
-			canWidth *= 3;
+			canWidth = 1080;
 			//height must be double the width
 			canHeight = canWidth * 2;
 			//setFullScreen
@@ -989,17 +996,35 @@
 
 	function mouseDownEvent(event) {
 		event.preventDefault();
-		eventMouseX = event.clientX;
-		eventMouseY = event.clientY;
+		if (event.touches!== undefined) {
+			eventMouseX = event.touches[0].clientX;
+			eventMouseY = event.touches[0].clientY;
+
+		} else {
+			eventMouseX = event.clientX;
+			eventMouseY = event.clientY;
+		}
 		isUserInteracting = true;
-		onMouseDownEventX = event.clientX;
-		onMouseDownEventY = event.clientY;
+		if (event.touches!== undefined) {
+			onMouseDownEventX = event.touches[0].clientX;
+			onMouseDownEventY = event.touches[0].clientY;
+
+		} else {
+			onMouseDownEventX = event.clientX;
+			onMouseDownEventY = event.clientY;
+		}
 	}
 
 	function mouseUpEvent(event) {
 		isUserInteracting = false;
-		eventMouseX = event.clientX;
-		eventMouseY = event.clientY;
+		if (event.touches != undefined) {
+			eventMouseX = event.touches[0].clientX;
+			eventMouseY = event.touches[0].clientY;
+
+		} else {
+			eventMouseX = event.clientX;
+			eventMouseY = event.clientY;
+		}
 		yRot += yMovement;
 		yRot = YClamp(yRot);
 		xMovement = 0;
@@ -1021,18 +1046,30 @@
 
 	function mouseOutEvent(event) {
 		event.preventDefault();
-		eventMouseX = event.clientX;
-		eventMouseY = event.clientY;
+		if (event.touches !== undefined) {
+			eventMouseX = event.touches[0].clientX;
+			eventMouseY = event.touches[0].clientY;
+
+		} else {
+			eventMouseX = event.clientX;
+			eventMouseY = event.clientY;
+		}
 	}
 
 	var yRotVal = 0;
 	function mouseMoveEvent(event) {
 		event.preventDefault();
 		if (isUserInteracting) {
-			eventMouseX = event.clientX;
-			eventMouseY = event.clientY;
-			xMovement = (onMouseDownEventX - eventMouseX) / 10000000;
+			if (event.touches !== undefined) {
+				eventMouseX = event.touches[0].clientX;
+				eventMouseY = event.touches[0].clientY;
 
+			} else {
+				eventMouseX = event.clientX;
+				eventMouseY = event.clientY;
+			}
+			xMovement = (onMouseDownEventX - eventMouseX) / 10000000;
+			console.log(xMovement);
 			if (auto_rotate)
 				xMovement += 0.000002;
 			yMovement = (onMouseDownEventY - eventMouseY);
