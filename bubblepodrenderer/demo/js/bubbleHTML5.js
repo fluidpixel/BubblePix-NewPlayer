@@ -28,11 +28,7 @@
 		vPerp : 0.5,
 		minDiam : 0.000001,
 		maxDiam : 0.62,
-<<<<<<< HEAD
 		MAX_WIDTH : 4096 * 2
-=======
-		MAX_WIDTH: 2048
->>>>>>> 5ba3091832da4dfc62a295328fd638071a364406
 	};
 
 	var xml_details = {
