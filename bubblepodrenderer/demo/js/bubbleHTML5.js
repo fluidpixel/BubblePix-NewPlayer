@@ -28,7 +28,7 @@
 		vPerp : 0.5,
 		minDiam : 0.000001,
 		maxDiam : 0.62,
-		MAX_WIDTH : 4096 * 2
+		MAX_WIDTH : 0
 	};
 
 	var xml_details = {
@@ -349,7 +349,6 @@
 		};
 
 		return {
-
 			renderFrame : function(time) {
 				this.RF(time);
 				return;
@@ -372,7 +371,7 @@
 				}
 			},
 
-			//gets called every framze
+			//gets called every frame
 			RF : function(time) {
 				// RX, RY & RZ may change part way through if the newR? (change tilt/turn) meathods are called while
 				// this meathod is running so put them in temp vars at render start.
@@ -399,17 +398,26 @@
 						//XAxis Rotation
 						//xRot*=firstFramePos - time * posDelta;
 						var lh = Math.floor(vector.lh + xRotNumber);
+						if (lh == undefined || lh == null || lh <= 0 || lh > 25000000) {
+							xRot = 0;
+							xMovement = 0;
+							xNumber = 0;
+							xRotNumber = 0;
+							lh = Math.floor(vector.lh);
+						}
 
 						//YAxis Rotation
 						var lv;
+						/*
 						if (!isUnWrappedImage) {
-							lv = (vector.lv + (textureHeight * (yRotVal)));
-						} else
+													lv = (vector.lv + (textureHeight * (yRotVal)));
+												} else*/
+						
 							lv = (vector.lv);
 
-						var idxC = pixel * 4;
+						var idxC = Math.floor(pixel * 4);
 
-						var idxT = (lh + lv) * 4;
+						var idxT = Math.floor((lh + lv) * 4);
 
 						canvasData[idxC + 0] = textureData[idxT + 0];
 						canvasData[idxC + 1] = textureData[idxT + 1];
@@ -417,7 +425,10 @@
 						canvasData[idxC + 3] = 255;
 
 					} else {
-						////console.log( "NULL VECTA")
+						/*canvasData[idxC + 0] = 255;
+						 canvasData[idxC + 1] =0;
+						 canvasData[idxC + 2] = 0;
+						 canvasData[idxC + 3] = 255;**/
 					}
 				}
 				var multiplier = 50000;
@@ -437,6 +448,7 @@
 	function cropBubblePodImage(imageData, outerWidth, outerHeight, innerWidth, innerHeight) {
 		bubble_details.maxDiam = 0.9;
 		bubble_details.minDiam = 0.1;
+		return imageData.data;
 		var innerImageMinDiam = bubble_details.minDiam;
 		var innerImageMaxDiam = bubble_details.maxDiam;
 
@@ -629,7 +641,7 @@
 					gCtxImg.drawImage(aImg, 0, 0, newWidth, newHeight);
 					newImageData = gCtxImg.getImageData(0, 0, newWidth, newHeight);
 					//var newData = newImageData.zz
-					//console.log("NEWIMAGEDATA: " + newImageData.data.length);
+					console.log("Resized IMAGEDATA Bytes: " + newImageData.data.length);
 					console.log("Have Resized Image");
 					gCtxImg.clearRect(0, 0, newWidth, newHeight);
 					console.log("NEWIMAGEDATA: " + newImageData.data.length);
@@ -642,30 +654,24 @@
 				console.log("Texture height = " + newHeight);
 				gImage.width = textureWidth;
 				gImage.height = textureHeight;
-				gCtxImg = gImage.getContext("2d");
+				//gCtxImg = gImage.getContext("2d");
 				gCtxImg.clearRect(0, 0, textureHeight, textureWidth);
-
 				if (resize) {
 					gCtxImg.putImageData(newImageData, Math.floor((max - newWidth) / 2), Math.floor((max - newHeight) / 2));
 				} else {
 					gCtxImg.drawImage(aImg, 0, textureWidth / 2 - aImg.naturalHeight / 2);
 				}
 				textureImageData = gCtxImg.getImageData(0, 0, textureHeight, textureWidth);
-				gCtxImg.clearRect(0, 0, textureHeight, textureWidth);
-				gCtxImg = undefined;
-				aImg = undefined;
-				originalImage = undefined;
-				gImage = undefined;
-				newImageData = undefined;
+				console.log("FINALIMAGEDATA: " + textureImageData.data.length);
 				gCtxImg = null;
-				aImg = null;
-				originalImage = null;
-				gImage = null;
-				newImageData = null;
 				textureData = textureImageData.data;
+				console.log("Final Texture Width = " + textureWidth);
+
+				console.log("Final Texture Height = " + textureHeight);
 				/*
 				 originalImage = null;
 				 aImg = null;*/
+
 			}
 		} else if (isUnWrappedImage && !isUnWrappedVideo) {
 			// mad bubblepix image
@@ -727,7 +733,7 @@
 		RZ = (180 - rz);
 		vs = fov;
 		hs = vs * aspect;
-		hs *= 1.5;
+		hs *= 1.25;
 		hhs = 0.5 * hs;
 		hvs = 0.5 * vs;
 		hs_ch = (hs / cWidth);
@@ -743,12 +749,22 @@
 	}
 
 
-	this.initHTML5 = function(isEqui, textureUrl, textureXMLUrl) {
+	this.initHTML5 = function(isEqui, textureUrl, textureXMLUrl, canvasWidth, textureResizeWidth) {
 		//Set parameters functions for EITHER unwrapped(bubblepix) image (A), or Equi Parameters (B) for Equirectangular images
 		//Must be set before createSphere is called
 
 		//A: setUnwrappedParameters (uPerpendicular, vPerpendicular, minDiameter, maxDiameter, fov, canvasWidth)
 		//B: setEquiParameters(FOV,canvasWidth);
+
+		if (canvasWidth == 0) {
+			canvasWidth = 244;
+		}
+		if (textureResizeWidth == 0) {
+			textureResizeWidth = 1024;
+		}
+
+		bubble_details.MAX_WIDTH = textureResizeWidth;
+
 		var isVideo = false;
 		var vidIdentifier = ".mp4";
 		if (textureUrl.indexOf(vidIdentifier) !== -1)
@@ -758,9 +774,9 @@
 
 		//these will be overwritten if there is xml data)
 		if (isUnWrappedImage) {
-			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 18, 244, isVideo);
+			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 18, canvasWidth, isVideo);
 		} else {
-			setEquiParameters(15, 244);
+			setEquiParameters(20, canvasWidth);
 		}
 		//setEquiParameters(20, 400);
 		//create sphere with texture
@@ -820,6 +836,7 @@
 					window.requestAnimationFrame(renderAnimationFrame);
 				};
 				window.requestAnimationFrame(renderAnimationFrame);
+				cancelLoadingScreen();
 			};
 			img.setAttribute("src", textureUrl);
 		} else if (loadTexture && isUnWrappedVideo) {
@@ -840,18 +857,20 @@
 				window.requestAnimationFrame(renderAnimationFrame);
 			};
 			window.requestAnimationFrame(renderAnimationFrame);
-
+			cancelLoadingScreen();
 		} else if (!loadTexture && isUnWrappedVideo) {
 			//reloading video
 			video.load();
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			copyImageToBuffer(originalImage);
 			earth = sphere(false);
+			cancelLoadingScreen();
 		} else {
 			//reloading image
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			copyImageToBuffer(originalImage);
 			earth = sphere(false);
+			cancelLoadingScreen();
 		}
 
 	};
@@ -947,7 +966,15 @@
 		el = null;
 	}
 
+	function cancelLoadingScreen() {
+
+	}
+	function showLoadingScreen() {
+
+	}
+
 	function fullScreenButtonClick() {
+		showLoadingScreen();
 		if (isFullScreen) {
 			var el = document.getElementById("bubbleViewer");
 
@@ -979,7 +1006,7 @@
 			el.style.width = "100%";
 
 			//double or treble canvas width and height for full screen
-			canWidth = 1080;
+			canWidth *= 3;
 			//height must be double the width
 			canHeight = canWidth * 2;
 			//setFullScreen
@@ -996,36 +1023,40 @@
 
 	function mouseDownEvent(event) {
 		event.preventDefault();
-		if (event.touches!== undefined) {
+		if (event.touches != undefined) {
 			eventMouseX = event.touches[0].clientX;
 			eventMouseY = event.touches[0].clientY;
-
 		} else {
 			eventMouseX = event.clientX;
 			eventMouseY = event.clientY;
 		}
+		//eventMouseY = event.clientY;
 		isUserInteracting = true;
-		if (event.touches!== undefined) {
+
+		if (event.touches != undefined) {
 			onMouseDownEventX = event.touches[0].clientX;
 			onMouseDownEventY = event.touches[0].clientY;
-
 		} else {
 			onMouseDownEventX = event.clientX;
 			onMouseDownEventY = event.clientY;
 		}
+
+		//onMouseDownEventX = event.clientX;
+		//onMouseDownEventY = event.clientY;
 	}
 
 	function mouseUpEvent(event) {
 		console.log("touch end");
 		isUserInteracting = false;
 		if (event.touches != undefined) {
-			eventMouseX = event.touches[0].clientX;
-			eventMouseY = event.touches[0].clientY;
-
+			eventMouseX = eventMouseX;
+			eventMouseY = eventMouseY;
+			console.log("touch: " + eventMouseX);
 		} else {
 			eventMouseX = event.clientX;
-			eventMouseY = event.clientY;
+			eventMouseY = eventMouseY;
 		}
+		//eventMouseY = event.clientY;
 		yRot += yMovement;
 		yRot = YClamp(yRot);
 		xMovement = 0;
@@ -1047,33 +1078,34 @@
 
 	function mouseOutEvent(event) {
 		event.preventDefault();
-		if (event.touches !== undefined) {
+		if (event.touches != undefined) {
 			eventMouseX = event.touches[0].clientX;
 			eventMouseY = event.touches[0].clientY;
-
 		} else {
 			eventMouseX = event.clientX;
 			eventMouseY = event.clientY;
 		}
+		//eventMouseY = event.clientY;
 	}
 
 	var yRotVal = 0;
 	function mouseMoveEvent(event) {
 		event.preventDefault();
 		if (isUserInteracting) {
-			if (event.touches !== undefined) {
+			if (event.touches != undefined) {
 				eventMouseX = event.touches[0].clientX;
 				eventMouseY = event.touches[0].clientY;
 			} else {
 				eventMouseX = event.clientX;
 				eventMouseY = event.clientY;
 			}
+			//eventMouseY = event.clientY;
 			xMovement = (onMouseDownEventX - eventMouseX) / 10000000;
-			console.log(xMovement);
+
 			if (auto_rotate)
 				xMovement += 0.000002;
-			//yMovement = (onMouseDownEventY - eventMouseY);
-			//yRotVal = yMovement + yRot;
+			yMovement = (onMouseDownEventY - eventMouseY);
+			yRotVal = yMovement + yRot;
 		}
 	}
 
@@ -1144,4 +1176,3 @@
 	}
 
 }).call(this);
-
