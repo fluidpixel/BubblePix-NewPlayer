@@ -28,7 +28,11 @@
 		vPerp : 0.5,
 		minDiam : 0.000001,
 		maxDiam : 0.62,
+<<<<<<< HEAD
 		MAX_WIDTH : 4096 * 2
+=======
+		MAX_WIDTH: 2048
+>>>>>>> 5ba3091832da4dfc62a295328fd638071a364406
 	};
 
 	var xml_details = {
@@ -1016,6 +1020,7 @@
 	}
 
 	function mouseUpEvent(event) {
+		console.log("touch end");
 		isUserInteracting = false;
 		if (event.touches != undefined) {
 			eventMouseX = event.touches[0].clientX;
@@ -1063,7 +1068,6 @@
 			if (event.touches !== undefined) {
 				eventMouseX = event.touches[0].clientX;
 				eventMouseY = event.touches[0].clientY;
-
 			} else {
 				eventMouseX = event.clientX;
 				eventMouseY = event.clientY;
@@ -1072,8 +1076,8 @@
 			console.log(xMovement);
 			if (auto_rotate)
 				xMovement += 0.000002;
-			yMovement = (onMouseDownEventY - eventMouseY);
-			yRotVal = yMovement + yRot;
+			//yMovement = (onMouseDownEventY - eventMouseY);
+			//yRotVal = yMovement + yRot;
 		}
 	}
 
