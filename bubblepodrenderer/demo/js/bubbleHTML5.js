@@ -17,7 +17,7 @@
 (function() {"use strict";
 
 	var timerStart = new Date().getTime();
-
+	var indexString = "";
 	var opts = {
 		tilt : 0,
 		turn : 0,
@@ -203,6 +203,27 @@
 
 	}
 
+	function sqrt(num) {
+		// Create an initial guess by simply dividing by 3.
+		var lastGuess, guess = num / 3;
+
+		// Loop until a good enough approximation is found.
+		do {
+			lastGuess = guess;
+			// store the previous guess
+
+			// find a new guess by averaging the old one with
+			// the original number divided by the old guess.
+			guess = (num / guess + guess) / 2;
+
+			// Loop again if the product isn't close enough to
+			// the original number.
+		} while(Math.abs(lastGuess - guess) > 5e-15);
+
+		return guess;
+		// return the approximate square root
+	};
+
 	//only gets called on sphere init
 	var calculateVector = function(h, v) {
 		// Calculate vector from focus point (Origin, so can ignor) to pixel
@@ -324,6 +345,7 @@
 			var lh = textureWidth + textureWidth * (Math.atan2(L[Y], L[X]) + Math.PI ) / (2 * Math.PI);
 			var lv = textureWidth * Math.floor(textureHeight - 1 - (textureHeight * (Math.acos(L[Z] / r) / Math.PI) % textureHeight));
 			//console.log("lh " + lh + " lv " + lv);
+			indexString += " lh " + lh + " lv " + lv;
 			return {
 				lv : lv,
 				lh : lh
@@ -341,7 +363,8 @@
 	var sphere = function(reuse) {
 
 		//textureData = textureImageData.data;
-		canvasData = canvasImageData.data; copyFnc;
+		canvasData = canvasImageData.data;
+		copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -371,15 +394,17 @@
 						if (!reuse) {
 							var v = Math.floor(pixel / cWidth);
 							var h = pixel - v * cWidth;
+
+							fullScreenCache[pixel] = calculateVector(h, v);
 							if (pixel == 0) {
 								var diff = (new Date().getTime() - timerStart);
 								console.log("Time Taken T Load to 0: " + diff);
+								console.log("pixelString: " + indexString);
 							}
 							if (pixel == (cWidth * cHeight) - 1) {
 								var diff = (new Date().getTime() - timerStart);
 								console.log("Time Taken TO Load to pixel length: " + diff);
 							}
-							fullScreenCache[pixel] = calculateVector(h, v);
 
 						}
 					}
@@ -390,6 +415,8 @@
 						if (!reuse) {
 							var v = Math.floor(pixel / cWidth);
 							var h = pixel - v * cWidth;
+
+							smallScreenCache[pixel] = calculateVector(h, v);
 							if (pixel == 0) {
 								var diff = (new Date().getTime() - timerStart);
 								console.log("Time Taken T Load to 0: " + diff);
@@ -398,7 +425,6 @@
 								var diff = (new Date().getTime() - timerStart);
 								console.log("Time Taken TO Load to pixel length: " + diff);
 							}
-							smallScreenCache[pixel] = calculateVector(h, v);
 
 						}
 					}
@@ -861,6 +887,14 @@
 			textureResizeWidth = 1024;
 		}
 
+		smallScreenCache = sScreenCache;
+		fullScreenCache = fScreenCache;
+
+		if (smallScreenCache == null)
+			smallScreenCache = undefined;
+		if (fullScreenCache == null)
+			fullScreenCache = undefined;
+
 		bubble_details.MAX_WIDTH = textureResizeWidth;
 
 		var isVideo = false;
@@ -890,7 +924,7 @@
 	var xmlData;
 	var bcWidth;
 	var bcHeight;
-	
+
 	this.createBubble = function(gCanvas, textureUrl, xmlURL) {
 		var loadTexture = false;
 		if (img === undefined) {

@@ -6,20 +6,29 @@
 		<script src="js/Stats.js"></script>
 		<script src="js/requestanimationframe.polyfill.js"></script>
 		<script src="js/bubbleHTML5.js"></script>
-		<script src="js/cache.js"></script>
+		<script src="js/screenVectorCache.js"></script>
+
+		<script src="caches/cache_244_1024.js"></script>
+		<script src="caches/cache_244_1024_full.js"></script>
+		<script src="caches/cache_244_2048.js"></script>
+		<script src="caches/cache_244_2048_full.js"></script>
+		<script src="caches/cache_244_4096.js"></script>
+		<script src="caches/cache_244_4096_full.js"></script>
+
 		<link href="style.css" rel="stylesheet">
 		<script>
 			function go() {
-				var textureUrl = "result.jpg";
+				var textureUrl = "tom_work.jpg";
 				var textureXml = "xml.xml";
 				var isEqui = true;
-				
-				/*
-				var smallScreen = new SmallScreen();
-								var fullScreen = new FullScreen();*/
-				
-				initHTML5(isEqui, textureUrl, textureXml,244,4096, null, null);
-				
+
+				var textureSize = 4096;
+				var canvasSize = 244;
+				var smallScreenCache = SmallScreen(getCache(textureSize, false), canvasSize, textureSize);
+				var fullScreenCache = FullScreen(getCache(textureSize, true), canvasSize * 3, textureSize);
+
+				initHTML5(isEqui, textureUrl, textureXml, 244, textureSize, smallScreenCache, fullScreenCache);
+
 				var stats = new Stats();
 				stats.getDomElement().style.position = 'relative';
 				stats.getDomElement().style.marginLeft = '-40px';
@@ -30,6 +39,28 @@
 					stats.update();
 				}, 1000 / 900);
 			}
+
+			function getCache(textureSize, fullScreen) {
+				if (textureSize == 4096) {
+					if (fullScreen)
+						return cache_244_4096_full;
+					else
+						return cache_244_4096;
+				} else if (textureSize == 2048) {
+					if (fullScreen)
+						return cache_244_2048_full;
+					else
+						return cache_244_2048;
+				} else if ( textureSize = 1024) {
+					if (fullScreen)
+						return cache_244_1024_full;
+					else
+						return cache_244_1024;
+				} else {
+					//not valid
+				}
+			}
+
 		</script>
 	</head>
 	<body onload="go()" >
@@ -43,10 +74,10 @@
 					<div id="fullscreen">
 						<img src="images/fullscreen.png">
 					</div>
-			<div id="fps"></div>
+					<div id="fps"></div>
 				</div>
 				<canvas id="bubble">
-					
+
 					<canvas id="backCanvas" height = "800" width = "1600" >
 
 						<video controls autoplay  id = "video" >
