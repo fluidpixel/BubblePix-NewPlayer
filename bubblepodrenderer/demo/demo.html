@@ -18,16 +18,16 @@
 		<link href="style.css" rel="stylesheet">
 		<script>
 			function go() {
-				var textureUrl = "tom_work.jpg";
+				var textureUrl = "videoframe.png";
 				var textureXml = "xml.xml";
-				var isEqui = true;
+				var isEqui = false;
 
 				var textureSize = 4096;
 				var canvasSize = 244;
-				var smallScreenCache = SmallScreen(getCache(textureSize, false), canvasSize, textureSize);
-				var fullScreenCache = FullScreen(getCache(textureSize, true), canvasSize * 3, textureSize);
+				//var smallScreenCache = SmallScreen(getCache(textureSize, false), canvasSize, textureSize);
+				//var fullScreenCache = FullScreen(getCache(textureSize, true), canvasSize * 3, textureSize);
 
-				initHTML5(isEqui, textureUrl, textureXml, 244, textureSize, smallScreenCache, fullScreenCache);
+				initHTML5(isEqui, textureUrl, textureXml, 244, textureSize, null, null);
 
 				var stats = new Stats();
 				stats.getDomElement().style.position = 'relative';

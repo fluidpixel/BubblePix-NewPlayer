@@ -97,7 +97,6 @@
 	// and do not stop the script but will result in incorrect
 	// displaying of the texture upon the sphere.
 	var f = 30;
-
 	// There may be a solution to the above problem by finding L in
 	// a slightly different way.
 	// Since the problem is equivelent to finding the intersection
@@ -173,57 +172,11 @@
 		}
 	}
 
-	function onInitFs(fs) {
-
-		fs.root.getFile('log.txt', {
-			create : true
-		}, function(fileEntry) {
-
-			// Create a FileWriter object for our FileEntry (log.txt).
-			fileEntry.createWriter(function(fileWriter) {
-
-				fileWriter.onwriteend = function(e) {
-					console.log('Write completed.');
-				};
-
-				fileWriter.onerror = function(e) {
-					console.log('Write failed: ' + e.toString());
-				};
-
-				// Create a new Blob and write it to log.txt.
-				var blob = new Blob(['Lorem Ipsum'], {
-					type : 'text/plain'
-				});
-
-				fileWriter.write(blob);
-
-			}, errorHandler);
-
-		}, errorHandler);
-
-	}
-
-	function sqrt(num) {
-		// Create an initial guess by simply dividing by 3.
-		var lastGuess, guess = num / 3;
-
-		// Loop until a good enough approximation is found.
-		do {
-			lastGuess = guess;
-			// store the previous guess
-
-			// find a new guess by averaging the old one with
-			// the original number divided by the old guess.
-			guess = (num / guess + guess) / 2;
-
-			// Loop again if the product isn't close enough to
-			// the original number.
-		} while(Math.abs(lastGuess - guess) > 5e-15);
-
-		return guess;
-		// return the approximate square root
-	};
-
+	
+	var rySin = undefined;
+	var ryCos = undefined;
+	var rzSin = undefined;
+	var rzCos = undefined;
 	//only gets called on sphere init
 	var calculateVector = function(h, v) {
 		// Calculate vector from focus point (Origin, so can ignor) to pixel
@@ -311,6 +264,13 @@
 
 		if (s > 0) {
 
+			if (rySin == undefined) {
+				rzSin = Math.sin(rz);
+				rzCos = Math.cos(rz);
+				rySin = Math.sin(ry);
+				ryCos = Math.cos(ry);
+			}
+
 			m1 = ((-b) - (Math.sqrt(s))) / (2 * a);
 			Y = Y;
 
@@ -323,8 +283,8 @@
 			// Do a couple of rotations on L
 
 			var lx = L[X];
-			var srz = Math.sin(rz);
-			var crz = Math.cos(rz);
+			var srz = rzSin;
+			var crz = rzCos;
 			L[X] = lx * crz - L[Y] * srz;
 			L[Y] = lx * srz + L[Y] * crz;
 
@@ -332,8 +292,8 @@
 
 			var lz;
 			lz = L[Z];
-			var sry = Math.sin(ry);
-			var cry = Math.cos(ry);
+			var sry = rySin;
+			var cry = ryCos;
 			L[Z] = lz * cry - L[Y] * sry;
 			L[Y] = lz * sry + L[Y] * cry;
 
@@ -345,7 +305,7 @@
 			var lh = textureWidth + textureWidth * (Math.atan2(L[Y], L[X]) + Math.PI ) / (2 * Math.PI);
 			var lv = textureWidth * Math.floor(textureHeight - 1 - (textureHeight * (Math.acos(L[Z] / r) / Math.PI) % textureHeight));
 			//console.log("lh " + lh + " lv " + lv);
-			indexString += " lh " + lh + " lv " + lv;
+			//indexString += " lh " + lh + " lv " + lv;
 			return {
 				lv : lv,
 				lh : lh
@@ -361,7 +321,7 @@
 	var smallScreenCache = undefined;
 	var cache = undefined;
 	var sphere = function(reuse) {
-
+		rySin = undefined;
 		//textureData = textureImageData.data;
 		canvasData = canvasImageData.data;
 		copyFnc;
@@ -399,7 +359,7 @@
 							if (pixel == 0) {
 								var diff = (new Date().getTime() - timerStart);
 								console.log("Time Taken T Load to 0: " + diff);
-								console.log("pixelString: " + indexString);
+								//console.log("pixelString: " + indexString);
 							}
 							if (pixel == (cWidth * cHeight) - 1) {
 								var diff = (new Date().getTime() - timerStart);
@@ -557,18 +517,6 @@
 		};
 	};
 
-	function readFromCache() {
-		if (textureWidth == 8192) {
-		} else if (textureWidth == 4096) {
-
-		} else if (textureWidth == 2048) {
-
-		} else {
-			//not valid image;
-		}
-
-	}
-
 	function cropBubblePodImage(imageData, outerWidth, outerHeight, innerWidth, innerHeight) {
 		bubble_details.maxDiam = 0.9;
 		bubble_details.minDiam = 0.1;
@@ -695,7 +643,7 @@
 				v += bubble_details.vPerp;
 
 				var xPixel = Math.floor(u * width);
-				var yPixel = Math.floor(v * height);
+				var yPixel = height - Math.floor(v * height);
 
 				var pixel = ((xPixel * width + yPixel) * 4);
 				var xPix = texImageData[pixel];
@@ -910,10 +858,7 @@
 		} else {
 			setEquiParameters(20, canvasWidth);
 		}
-		//setEquiParameters(20, 400);
-		//create sphere with texture
 		createBubble(document.getElementById("bubble"), textureUrl, textureXMLUrl);
-		//createBubble(document.getElementById("bubble"), textureUrl, true, textureXMLUrl);
 	};
 
 	//need to be global
