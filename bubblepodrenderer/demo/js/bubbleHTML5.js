@@ -1256,8 +1256,8 @@
 
 			convertToWebPlayerParams();
 		} else {
-			bubble_details.minDiam = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
-			bubble_details.maxDiam = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
+			bubble_details.minDiam = 1.0-parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
+			bubble_details.maxDiam = 1.0-parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
 		}
 	}
 
