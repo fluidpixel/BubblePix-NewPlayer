@@ -518,11 +518,10 @@
 	};
 
 	function cropBubblePodImage(imageData, outerWidth, outerHeight, innerWidth, innerHeight) {
-		bubble_details.maxDiam = 0.9;
-		bubble_details.minDiam = 0.1;
-		return imageData.data;
+		
 		var innerImageMinDiam = bubble_details.minDiam;
 		var innerImageMaxDiam = bubble_details.maxDiam;
+		
 
 		var imagePixels = imageData.data;
 		var pixelOffset = (outerHeight - innerHeight) / 2;
@@ -736,7 +735,8 @@
 				textureImageData = gCtxImg.getImageData(0, 0, textureHeight, textureWidth);
 				console.log("FINALIMAGEDATA: " + textureImageData.data.length);
 				gCtxImg = null;
-				textureData = textureImageData.data;
+				textureData = cropBubblePodImage(textureImageData, textureWidth, textureHeight, 0, textureWidth / 2 - aImg.naturalHeight / 2) ;
+		
 				console.log("Final Texture Width = " + textureWidth);
 
 				console.log("Final Texture Height = " + textureHeight);
@@ -1256,7 +1256,7 @@
 
 			convertToWebPlayerParams();
 		} else {
-			bubble_details.minDiam = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('inner_circle'));
+			bubble_details.minDiam = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
 			bubble_details.maxDiam = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
 		}
 	}
