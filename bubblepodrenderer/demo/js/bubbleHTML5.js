@@ -172,7 +172,6 @@
 		}
 	}
 
-	
 	var rySin = undefined;
 	var ryCos = undefined;
 	var rzSin = undefined;
@@ -323,8 +322,7 @@
 	var sphere = function(reuse) {
 		rySin = undefined;
 		//textureData = textureImageData.data;
-		canvasData = canvasImageData.data;
-		copyFnc;
+		canvasData = canvasImageData.data; copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -480,12 +478,11 @@
 
 						//YAxis Rotation
 						var lv;
-						/*
-						 if (!isUnWrappedImage) {
-						 lv = (vector.lv + (textureHeight * (yRotVal)));
-						 } else*/
 
-						lv = (vector.lv);
+						if (!isUnWrappedImage) {
+							lv = (vector.lv + (textureHeight * (yRotVal)));
+						} else
+							lv = (vector.lv);
 
 						var idxC = Math.floor(pixel * 4);
 
@@ -496,12 +493,15 @@
 						canvasData[idxC + 2] = textureData[idxT + 2];
 						canvasData[idxC + 3] = 255;
 
-					} else {
-						/*canvasData[idxC + 0] = 255;
-						 canvasData[idxC + 1] =0;
-						 canvasData[idxC + 2] = 0;
-						 canvasData[idxC + 3] = 255;**/
+						/*
+						 //if pixelcolor is fully black
+						 if (canvasData[idxC + 0] == 0 && canvasData[idxC + 1] == 0 && canvasData[idxC + 2] == 0) {
+						 //turn red
+						 canvasData[idxC + 0] =255;
+						 }*/
+
 					}
+
 				}
 				var multiplier = 50000;
 				if (isFullScreen)
@@ -518,13 +518,12 @@
 	};
 
 	function cropBubblePodImage(imageData, outerWidth, outerHeight, innerWidth, innerHeight) {
-		
+
 		var innerImageMinDiam = bubble_details.minDiam;
 		var innerImageMaxDiam = bubble_details.maxDiam;
-		
 
 		var imagePixels = imageData.data;
-		var pixelOffset = (outerHeight - innerHeight) / 2;
+		var pixelOffset = outerHeight / 2 - innerHeight / 2;
 		var minPixel = innerHeight * innerImageMinDiam;
 		minPixel += pixelOffset;
 		minPixel = Math.floor(minPixel);
@@ -532,7 +531,8 @@
 		maxPixel += pixelOffset;
 		maxPixel = Math.floor(maxPixel);
 		console.log(minPixel + " min:max " + maxPixel);
-		console.log(outerHeight + " outWidth:outHeight " + outerWidth);
+		console.log(outerHeight + " outHeight:outWidth " + outerWidth);
+		console.log(innerHeight + " innerHeight:innerWidth " + innerWidth);
 		var buf = [];
 
 		var pixelIndex = 0;
@@ -701,13 +701,13 @@
 					resize = true;
 				}
 				gImage = document.createElement('canvas');
+				gCtxImg = gImage.getContext("2d");
 				var newImageData = undefined;
+				newWidth = Math.floor(newWidth);
+				newHeight = Math.floor(newHeight);
 				if (resize) {
-					newWidth = Math.floor(newWidth);
-					newHeight = Math.floor(newHeight);
 					gImage.width = newWidth;
 					gImage.height = newHeight;
-					gCtxImg = gImage.getContext("2d");
 					gCtxImg.clearRect(0, 0, newWidth, newHeight);
 					gCtxImg.drawImage(aImg, 0, 0, newWidth, newHeight);
 					newImageData = gCtxImg.getImageData(0, 0, newWidth, newHeight);
@@ -730,19 +730,19 @@
 				if (resize) {
 					gCtxImg.putImageData(newImageData, Math.floor((max - newWidth) / 2), Math.floor((max - newHeight) / 2));
 				} else {
-					gCtxImg.drawImage(aImg, 0, textureWidth / 2 - aImg.naturalHeight / 2);
+					gCtxImg.drawImage(aImg, 0, Math.floor((max - newHeight) / 2));
 				}
 				textureImageData = gCtxImg.getImageData(0, 0, textureHeight, textureWidth);
 				console.log("FINALIMAGEDATA: " + textureImageData.data.length);
 				gCtxImg = null;
-				textureData = cropBubblePodImage(textureImageData, textureWidth, textureHeight, 0, textureWidth / 2 - aImg.naturalHeight / 2) ;
-		
+				if (resize) {
+					textureData = cropBubblePodImage(textureImageData, textureWidth, textureHeight, 0, newHeight);
+				} else {
+					textureData = cropBubblePodImage(textureImageData, textureWidth, textureHeight, 0, aImg.height);
+				}
 				console.log("Final Texture Width = " + textureWidth);
 
 				console.log("Final Texture Height = " + textureHeight);
-				/*
-				 originalImage = null;
-				 aImg = null;*/
 
 			}
 		} else if (isUnWrappedImage && !isUnWrappedVideo) {
@@ -1256,8 +1256,9 @@
 
 			convertToWebPlayerParams();
 		} else {
-			bubble_details.minDiam = 1.0-parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
-			bubble_details.maxDiam = 1.0-parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
+			bubble_details.minDiam = 0.1;
+			bubble_details.maxDiam = 0.9;
+
 		}
 	}
 
