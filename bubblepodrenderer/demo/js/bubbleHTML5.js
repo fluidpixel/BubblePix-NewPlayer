@@ -17,7 +17,7 @@
 (function() {"use strict";
 
 	var timerStart = new Date().getTime();
-	var indexString = "";
+
 	var opts = {
 		tilt : 0,
 		turn : 0,
@@ -97,6 +97,7 @@
 	// and do not stop the script but will result in incorrect
 	// displaying of the texture upon the sphere.
 	var f = 30;
+
 	// There may be a solution to the above problem by finding L in
 	// a slightly different way.
 	// Since the problem is equivelent to finding the intersection
@@ -304,7 +305,6 @@
 			var lh = textureWidth + textureWidth * (Math.atan2(L[Y], L[X]) + Math.PI ) / (2 * Math.PI);
 			var lv = textureWidth * Math.floor(textureHeight - 1 - (textureHeight * (Math.acos(L[Z] / r) / Math.PI) % textureHeight));
 			//console.log("lh " + lh + " lv " + lv);
-			//indexString += " lh " + lh + " lv " + lv;
 			return {
 				lv : lv,
 				lh : lh
@@ -322,7 +322,8 @@
 	var sphere = function(reuse) {
 		rySin = undefined;
 		//textureData = textureImageData.data;
-		canvasData = canvasImageData.data; copyFnc;
+		canvasData = canvasImageData.data;
+		copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -352,17 +353,18 @@
 						if (!reuse) {
 							var v = Math.floor(pixel / cWidth);
 							var h = pixel - v * cWidth;
-
+							
 							fullScreenCache[pixel] = calculateVector(h, v);
+							
 							if (pixel == 0) {
 								var diff = (new Date().getTime() - timerStart);
 								console.log("Time Taken T Load to 0: " + diff);
-								//console.log("pixelString: " + indexString);
 							}
 							if (pixel == (cWidth * cHeight) - 1) {
 								var diff = (new Date().getTime() - timerStart);
 								console.log("Time Taken TO Load to pixel length: " + diff);
 							}
+							
 
 						}
 					}
@@ -373,7 +375,6 @@
 						if (!reuse) {
 							var v = Math.floor(pixel / cWidth);
 							var h = pixel - v * cWidth;
-
 							smallScreenCache[pixel] = calculateVector(h, v);
 							if (pixel == 0) {
 								var diff = (new Date().getTime() - timerStart);
@@ -383,6 +384,7 @@
 								var diff = (new Date().getTime() - timerStart);
 								console.log("Time Taken TO Load to pixel length: " + diff);
 							}
+							
 
 						}
 					}
@@ -410,19 +412,19 @@
 			};
 		})();
 
-		var posDelta = textureWidth / (20 * 1000);
+		var posDelta = textureWidth * 0.00005; //textureWidth / (20 * 1000
 		var firstFramePos = (new Date()) * posDelta;
 
-		var stats = {
-			fastCount : 0,
-			fastSumMs : 0
-		};
+		//var stats = {
+		//	fastCount : 0,
+		//	fastSumMs : 0
+		//};
 
 		return {
 			renderFrame : function(time) {
 				this.RF(time);
 				return;
-				stats.firstMs = new Date() - time;
+				//stats.firstMs = new Date() - time;
 				this.renderFrame = this.sumRF;
 				//console.log(rotCache);
 				for (var key in rotCache) {
@@ -433,12 +435,12 @@
 			},
 			sumRF : function(time) {
 				this.RF(time);
-				stats.fastSumMs += new Date() - time;
-				stats.fastCount++;
-				if (stats.fastSumMs > stats.firstMs) {
+				//stats.fastSumMs += new Date() - time;
+				//stats.fastCount++;
+				//if (stats.fastSumMs > stats.firstMs) {
 					//       alert("calc:precompute ratio = 1:"+ stats.fastCount +" "+ stats.fastSumMs +" "+ stats.firstMs);
-					this.renderFrame = this.RF;
-				}
+				//	this.renderFrame = this.RF;
+				//}
 			},
 
 			//gets called every frame
@@ -447,17 +449,20 @@
 				// this meathod is running so put them in temp vars at render start.
 				// They also need converting from degrees to radians
 
-				rx = RX * Math.PI / 180;
-				ry = RY * Math.PI / 180;
-				rz = RZ * Math.PI / 180;
+				rx = RX * Math.PI / 180;//0.01745329251;
+				ry = RY * Math.PI / 180;//0.01745329251;
+				rz = RZ * Math.PI / 180;//0.01745329251;
 				// add to 24*60*60 so it will be a day before turnBy is negative and it hits the slow negative modulo bug
 				var turnBy = 24 * 60 * 60 + firstFramePos - time * posDelta;
 				var pixel = cWidth * cHeight;
 
-				yRotVal = YClamp(yRotVal);
+				//yRotVal = YClamp(yRotVal);
 				var xRotNumber = xRot;
-				var xNumber = xMovement;
+				
+				var xNumber = 0;
 
+				xNumber = xMovement;
+					
 				var index = 0;
 				while (pixel--) {
 
@@ -467,41 +472,33 @@
 
 						//XAxis Rotation
 						//xRot*=firstFramePos - time * posDelta;
-						var lh = Math.floor(vector.lh + xRotNumber);
+						var lh = ~~(vector.lh + xRotNumber);
 						if (lh == undefined || lh == null || lh <= 0 || lh > 25000000) {
 							xRot = 0;
 							xMovement = 0;
 							xNumber = 0;
 							xRotNumber = 0;
-							lh = Math.floor(vector.lh);
+							lh = ~~(vector.lh);
 						}
 
 						//YAxis Rotation
 						var lv;
+						
+						 if (!isUnWrappedImage)
+							 lv = (vector.lv + (textureHeight * (yRotVal)));
+						 else
+							 lv = (vector.lv);
 
-						if (!isUnWrappedImage) {
-							lv = (vector.lv + (textureHeight * (yRotVal)));
-						} else
-							lv = (vector.lv);
+						var idxC = ~~(pixel * 4);
 
-						var idxC = Math.floor(pixel * 4);
-
-						var idxT = Math.floor((lh + lv) * 4);
+						var idxT = ~~((lh + lv) * 4);
 
 						canvasData[idxC + 0] = textureData[idxT + 0];
 						canvasData[idxC + 1] = textureData[idxT + 1];
 						canvasData[idxC + 2] = textureData[idxT + 2];
 						canvasData[idxC + 3] = 255;
 
-						/*
-						 //if pixelcolor is fully black
-						 if (canvasData[idxC + 0] == 0 && canvasData[idxC + 1] == 0 && canvasData[idxC + 2] == 0) {
-						 //turn red
-						 canvasData[idxC + 0] =255;
-						 }*/
-
 					}
-
 				}
 				var multiplier = 50000;
 				if (isFullScreen)
@@ -517,8 +514,20 @@
 		};
 	};
 
-	function cropBubblePodImage(imageData, outerWidth, outerHeight, innerWidth, innerHeight) {
+	function readFromCache() {
+		if (textureWidth == 8192) {
+		} else if (textureWidth == 4096) {
 
+		} else if (textureWidth == 2048) {
+
+		} else {
+			//not valid image;
+		}
+
+	}
+
+	function cropBubblePodImage(imageData, outerWidth, outerHeight, innerWidth, innerHeight) {
+		
 		var innerImageMinDiam = bubble_details.minDiam;
 		var innerImageMaxDiam = bubble_details.maxDiam;
 
@@ -531,8 +540,7 @@
 		maxPixel += pixelOffset;
 		maxPixel = Math.floor(maxPixel);
 		console.log(minPixel + " min:max " + maxPixel);
-		console.log(outerHeight + " outHeight:outWidth " + outerWidth);
-		console.log(innerHeight + " innerHeight:innerWidth " + innerWidth);
+		console.log(outerHeight + " outWidth:outHeight " + outerWidth);
 		var buf = [];
 
 		var pixelIndex = 0;
@@ -695,16 +703,26 @@
 				var oldWidth = aImg.width;
 				var resize = false;
 
-				if (oldWidth > bubble_details.MAX_WIDTH) {
-					newHeight *= bubble_details.MAX_WIDTH / newWidth;
-					newWidth = bubble_details.MAX_WIDTH;
+				if (bubble_details.MAX_WIDTH)
+				{
+					if (oldWidth > bubble_details.MAX_WIDTH) 
+					{
+						newHeight *= bubble_details.MAX_WIDTH / newWidth;
+						newWidth = bubble_details.MAX_WIDTH;
+						resize = true;
+					}
+				}
+				else
+				{
 					resize = true;
 				}
+				
 				gImage = document.createElement('canvas');
 				gCtxImg = gImage.getContext("2d");
 				var newImageData = undefined;
 				newWidth = Math.floor(newWidth);
 				newHeight = Math.floor(newHeight);
+				
 				if (resize) {
 					gImage.width = newWidth;
 					gImage.height = newHeight;
@@ -718,14 +736,18 @@
 					console.log("NEWIMAGEDATA: " + newImageData.data.length);
 				}
 				var max = Math.max(newWidth, newHeight);
-				textureWidth = max;
-				textureClampHeight = aImg.naturalHeight;
+				if (max)
+				{
+					textureWidth = max;
+					textureClampHeight = newHeight;
+					textureHeight = max;
+				}
+
 				console.log("Texture Width = " + newWidth);
-				textureHeight = max;
 				console.log("Texture height = " + newHeight);
 				gImage.width = textureWidth;
 				gImage.height = textureHeight;
-				//gCtxImg = gImage.getContext("2d");
+				gCtxImg = gImage.getContext("2d");
 				gCtxImg.clearRect(0, 0, textureHeight, textureWidth);
 				if (resize) {
 					gCtxImg.putImageData(newImageData, Math.floor((max - newWidth) / 2), Math.floor((max - newHeight) / 2));
@@ -740,10 +762,7 @@
 				} else {
 					textureData = cropBubblePodImage(textureImageData, textureWidth, textureHeight, 0, aImg.height);
 				}
-				console.log("Final Texture Width = " + textureWidth);
-
-				console.log("Final Texture Height = " + textureHeight);
-
+				console.log("Final Texture Width = " + textureWidth + "Height: " + textureHeight);
 			}
 		} else if (isUnWrappedImage && !isUnWrappedVideo) {
 			// mad bubblepix image
@@ -751,7 +770,8 @@
 				gImage = document.createElement('canvas');
 				var max = Math.max(aImg.naturalWidth, aImg.naturalHeight);
 				//console.log("Texture Width = " + aImg.naturalWidth);
-				textureClampHeight = aImg.naturalHeight;
+				textureClampHeight = aImg.naturalHeight * (bubble_details.minDiam - bubble_details.maxDiam); //should give textureClampHeight taking into account cropping of image
+				
 				//console.log("Texture height = " + aImg.naturalHeight);
 				textureWidth = max;
 				textureHeight = max;
@@ -805,7 +825,11 @@
 		RZ = (180 - rz);
 		vs = fov;
 		hs = vs * aspect;
-		hs *= 1.25;
+		if (isUnWrappedImage){
+			hs *= 2.5;
+		}else{
+			hs *= 1.875;
+		}
 		hhs = 0.5 * hs;
 		hvs = 0.5 * vs;
 		hs_ch = (hs / cWidth);
@@ -832,16 +856,8 @@
 			canvasWidth = 244;
 		}
 		if (textureResizeWidth == 0) {
-			textureResizeWidth = 1024;
+			textureResizeWidth = 2048;
 		}
-
-		smallScreenCache = sScreenCache;
-		fullScreenCache = fScreenCache;
-
-		if (smallScreenCache == null)
-			smallScreenCache = undefined;
-		if (fullScreenCache == null)
-			fullScreenCache = undefined;
 
 		bubble_details.MAX_WIDTH = textureResizeWidth;
 
@@ -851,14 +867,17 @@
 			isVideo = true;
 
 		isUnWrappedImage = !isEqui;
-
+		
 		//these will be overwritten if there is xml data)
 		if (isUnWrappedImage) {
 			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 18, canvasWidth, isVideo);
 		} else {
-			setEquiParameters(20, canvasWidth);
+			setEquiParameters(19, canvasWidth);
 		}
+		//setEquiParameters(20, 400);
+		//create sphere with texture
 		createBubble(document.getElementById("bubble"), textureUrl, textureXMLUrl);
+		//createBubble(document.getElementById("bubble"), textureUrl, true, textureXMLUrl);
 	};
 
 	//need to be global
@@ -869,7 +888,7 @@
 	var xmlData;
 	var bcWidth;
 	var bcHeight;
-
+	
 	this.createBubble = function(gCanvas, textureUrl, xmlURL) {
 		var loadTexture = false;
 		if (img === undefined) {
@@ -878,7 +897,9 @@
 		gCtx = gCanvas.getContext("2d");
 		gCanvas.height = canWidth;
 		gCanvas.width = canHeight;
-
+		
+		console.log("width: " + gCanvas.width);
+		
 		if (loadTexture) {
 			setEventListeners(gCanvas);
 			xmlData = loadXML(xmlURL);
@@ -911,7 +932,7 @@
 				earth = sphere(false);
 				renderAnimationFrame = function(time) {
 					earth.renderFrame(time);
-					setTimeout(window.requestAnimationFrame, 10, renderAnimationFrame);
+					setTimeout(window.requestAnimationFrame, 20, renderAnimationFrame);
 				};
 				window.requestAnimationFrame(renderAnimationFrame);
 				cancelLoadingScreen();
@@ -1048,22 +1069,99 @@
 			////console.log(el + " 2");
 		}
 		el = null;
+		
+		var el = document.getElementById("fullscreen_off");
+
+		if (el.addEventListener) {
+			el.addEventListener("click", fullScreenButtonClick, false);
+		} else if (el.attachEvent) {
+			el.attachEvent('onclick', fullScreenButtonClick);
+			////console.log(el + " 2");
+		}
+		el = null;
+		
+		el = document.getElementById("rotate");
+
+		if (el.addEventListener) {
+			el.addEventListener("click", toggleRotateButtonClick, false);
+		} else if (el.attachEvent) {
+			el.attachEvent('onclick', toggleRotateButtonClick);
+			////console.log(el + " 2");
+		}
+		el = null;
+		
+		el = document.getElementById("rotate_off");
+
+		if (el.addEventListener) {
+			el.addEventListener("click", toggleRotateButtonClick, false);
+		} else if (el.attachEvent) {
+			el.attachEvent('onclick', toggleRotateButtonClick);
+			////console.log(el + " 2");
+		}
+		el = null;
+		
+		//$(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange',fullscreenChanged);
+
 	}
 
 	function cancelLoadingScreen() {
-
+		document.getElementById("loading").style.display = 'none';
 	}
 
 	function showLoadingScreen() {
-
+		document.getElementById("loading").style.display = '';
 	}
 
+	function toggleRotateButtonClick() {
+		auto_rotate = !auto_rotate;
+		
+		if (auto_rotate)
+		{
+			xMovement = 0.000002;
+			document.getElementById("rotate").style.display = 'block';
+			document.getElementById("rotate_off").style.display = 'none';
+		}
+		else
+		{
+			xMovement = 0;
+			document.getElementById("rotate").style.display = 'none';
+			document.getElementById("rotate_off").style.display = 'block';
+		}
+	}
+	
+	var fs_state = "";
+	//var ignore_once = false;
+	
+	$(window).resize(function(){ //when the browser size change
+	        //if FS is active
+	        fs_state = typeof(document.webkitIsFullScreen) == "undefined"? 
+	            document.webkitIsFullScreen : document.mozFullScreen
+	        //ignore_once = !ignore_once; //event is called 2 times per fullscreen 
+	//(don't know why), so i ignore once
+	//console.log("fullscreen: " + fs_state);
+	
+	    switch(fs_state){
+	        case true:
+				console.log("fullscreen yes");
+	            fullScreenButtonClick();
+	            break;
+
+	        case false:
+				console.log("fullscreen no");
+	            fullScreenButtonClick();
+	            break;
+            }
+	});
+			
 	function fullScreenButtonClick() {
 		timerStart = new Date().getTime();
 		showLoadingScreen();
 		if (isFullScreen) {
 			var el = document.getElementById("bubbleViewer");
 
+			document.getElementById("fullscreen").style.display = 'block';
+			document.getElementById("fullscreen_off").style.display = 'none';
+			
 			el.style.height = "244px";
 			el.style.width = "610px";
 			canWidth = originalCanWidth;
@@ -1079,7 +1177,10 @@
 		} else {
 
 			var el = document.getElementById("bubbleViewer");
-
+			
+			document.getElementById("fullscreen").style.display = 'none';
+			document.getElementById("fullscreen_off").style.display = 'block';
+			
 			if (el.requestFullScreen) {
 				el.requestFullScreen();
 			} else if (el.mozRequestFullScreen) {
@@ -1103,7 +1204,7 @@
 	}
 
 	function reload() {
-
+		console.log("reloading");
 		createBubble(document.getElementById("bubble"), "", "");
 	}
 
@@ -1132,12 +1233,10 @@
 	}
 
 	function mouseUpEvent(event) {
-		console.log("touch end");
 		isUserInteracting = false;
 		if (event.touches != undefined) {
 			eventMouseX = eventMouseX;
 			eventMouseY = eventMouseY;
-			console.log("touch: " + eventMouseX);
 		} else {
 			eventMouseX = event.clientX;
 			eventMouseY = eventMouseY;
@@ -1147,18 +1246,25 @@
 		yRot = YClamp(yRot);
 		xMovement = 0;
 		yMovement = 0;
-
+		
 		if (auto_rotate)
 			xMovement = 0.000002;
 	}
 
 	var yaya = 0;
-	function YClamp(y) {
-		if (y > textureClampHeight / 4) {
-			y = textureClampHeight / 4;
-		} else if (y < -textureClampHeight / 4) {
-			y = -textureClampHeight / 4;
+	function YClamp(y) 
+	{
+		console.log("y: " + y + " textureClampHeight: " + textureClampHeight + " fov: " + FOV)
+		console.log("calc: "+ textureClampHeight / (FOV * 3.6))
+		if (y > textureClampHeight / (FOV * 3.6)) //bottom
+		{
+			y = textureClampHeight / (FOV * 3.6);
+		} 
+		else if (y < -textureClampHeight / (FOV * 3.6)) //top
+		{
+			y = -textureClampHeight / (FOV * 3.6);
 		}
+		console.log("new y:" + y)
 		return Math.floor(y);
 	}
 
@@ -1186,17 +1292,19 @@
 				eventMouseY = event.clientY;
 			}
 			//eventMouseY = event.clientY;
-			xMovement = (onMouseDownEventX - eventMouseX) / 10000000;
+			yMovement = (onMouseDownEventY - eventMouseY) * 2;// / 20000000;
+			xMovement = (onMouseDownEventX - eventMouseX) / 2500000;
 
 			if (auto_rotate)
 				xMovement += 0.000002;
-			yMovement = (onMouseDownEventY - eventMouseY);
-			yRotVal = yMovement + yRot;
+			
+			//yMovement = (onMouseDownEventY - eventMouseY);
+			yRotVal = yMovement + yRot
+			yRotVal = YClamp(yRotVal);
 		}
 	}
 
 	function mouseScrollEvent(event) {
-		////console.log("scroll");
 		if (event.wheelDeltaY) {
 			if (event.wheelDeltaY < 0 && FOV < 21)
 				setFOV(34);
@@ -1246,19 +1354,25 @@
 			xml_details.width = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
 			xml_details.height = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
 
-			var initStartString = xml.getElementsByTagName("play_objects")[0].getElementsByTagName('auto')[0].getAttribute('init_start');
-			;
-			//console.log("initstart = " + initStartString);
-			if (initStartString == 'yes')
-				auto_rotate = true;
-			else
-				auto_rotate = false;
-
 			convertToWebPlayerParams();
 		} else {
-			bubble_details.minDiam = 0.1;
-			bubble_details.maxDiam = 0.9;
-
+			
+			bubble_details.minDiam = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
+			bubble_details.maxDiam = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
+		}
+		
+		var initStartString = xml.getElementsByTagName("play_objects")[0].getElementsByTagName('auto')[0].getAttribute('init_start');
+		if (initStartString == 'yes')
+		{
+			auto_rotate = true;
+			document.getElementById("rotate").style.display = 'block';
+			document.getElementById("rotate_off").style.display = 'none';
+		}
+		else
+		{
+			auto_rotate = false;
+			document.getElementById("rotate").style.display = 'none';
+			document.getElementById("rotate_off").style.display = 'block';
 		}
 	}
 
