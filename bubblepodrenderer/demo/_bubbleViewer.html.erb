@@ -1,0 +1,84 @@
+<div id="fullScreenContainer"></div>
+<div class="bubbleViewer" id="bubbleViewer" oncontextmenu="return false">
+
+	<% xmlUrl = "#{request.protocol}#{request.host_with_port}/bubbl3xml.xml" + @xmlParams %>
+	<% image_url = @bubble_image.to_s.sub( ".jpg", "_e.jpg" ).sub( ".mp4", "_e.jpg" ) %>
+
+	<% if @bubble['format'] == 'video' %>
+	<% end %>
+	
+	<div id="loading" class="loading">Loading Bubble...</div>
+	
+	<div id="ui" class="ui">
+		
+		<div id="logo">
+			<%= image_tag( "icon.png" ) %>
+		</div>
+		<div id="fullscreen">
+			<%= image_tag( "fullscreen.png" ) %>
+		</div>
+		<div id="fullscreen_off">
+			<%= image_tag( "fullscreen_off.png" ) %>
+		</div>
+		<div id="rotate">
+			<%= image_tag( "rotate.png" ) %>
+		</div>
+		<div id="rotate_off">
+			<%= image_tag( "rotate_off.png" ) %>
+		</div>
+	</div>
+	<canvas id="bubble" class="bubbleCanvas" >
+		Sorry, your browser does not support the canvas element, we'll now try Flash.
+	</canvas>
+	
+	<script>
+		window.onload = function(){
+
+        //Testing if webgl is supported
+        if (!window.WebGLRenderingContext) 
+        {
+			return;
+        }
+        //gl = document.getElementById( 'canvas' ).getContext("webgl") || canvas.getContext("experimental-webgl");
+        gl = false
+        if (gl) 
+        {
+			$( ".sorry" ).remove();
+			$( ".loading" ).remove();
+			$( ".ui" ).remove();
+			$( ".bubbleCanvas" ).remove();
+            //equirectangle?, image_path, xml_path
+            initGL(true, "<%= @bubble_image %>", "<%= xmlUrl %>" ); //webgl
+		}
+        else
+        {
+			html5 = document.getElementById( 'canvas' ).getContext("2d");
+			if (html5)
+			{
+				$('div.sorry').remove();
+				$( ".ui" ).show();
+				//$( ".loading").remove();
+				
+				var isEqui = false
+				<% if @bubble['format'] == 'equi' %>;
+					isEqui = true;
+				<% end %>
+				
+					
+				initHTML5(isEqui, "<%= @bubble_image %>", "<%= xmlUrl %>", 244, <%= @resize %>, null, null); //html5
+				//createBubble(document.getElementById("bubble"), "<%= @bubble_image %>", true, "bubbleViewer"); //html5
+			}
+			else //revert to flash
+			{
+				$( ".loading" ).remove();
+				$( ".ui" ).remove();
+				$( ".bubbleCanvas" ).remove();
+				if (this.style.visibility != "hidden") this.style.visibility = "hidden";
+				document.getElementById('bubbleViewer').innerHTML = "<%= escape_javascript(render :partial => 'partials/flash') %>";
+				return;
+			}
+        }
+    }
+    </script>
+        
+</div><!--end bubbleViewer-->
