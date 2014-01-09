@@ -3,12 +3,13 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 		<title>BubblePod Renderer</title>
+
+		<script src="js/jquery-1.7.2.min.js"></script>
 		<script src="js/Stats.js"></script>
+		<script src="js/doWork.js"></script>
 		<script src="js/requestanimationframe.polyfill.js"></script>
 		<script src="js/bubbleHTML5.js"></script>
 		<script src="js/screenVectorCache.js"></script>
-
-		<script src="caches/cache_244_1024.js"></script>
 		<script src="caches/cache_244_1024_full.js"></script>
 		<script src="caches/cache_244_2048.js"></script>
 		<script src="caches/cache_244_2048_full.js"></script>
@@ -18,16 +19,18 @@
 		<link href="style.css" rel="stylesheet">
 		<script>
 			function go() {
-				var textureUrl = "bubble_equi.jpg";
+				var textureUrl = "04930473.jpg";
 				var textureXml = "xml.xml";
-				var isEqui = true;
+				var isEqui = false;
 
-				var textureSize = 4096;
-				var canvasSize = 244;
-				//var smallScreenCache = SmallScreen(getCache(textureSize, false), canvasSize, textureSize);
-				//var fullScreenCache = FullScreen(getCache(textureSize, true), canvasSize * 3, textureSize);
+				var textureSize = 2100;
+				var canvasSize = 250;
 
-				initHTML5(isEqui, textureUrl, textureXml, 244, textureSize, null, null);
+			/*
+				var smallScreenCache = SmallScreen(getCache(textureSize, false), canvasSize, textureSize);
+							var fullScreenCache = FullScreen(getCache(textureSize, true), canvasSize * 3, textureSize);*/
+			
+				initHTML5(isEqui, textureUrl, textureXml, canvasSize, textureSize, null, null);
 
 				var stats = new Stats();
 				stats.getDomElement().style.position = 'relative';
@@ -37,7 +40,7 @@
 				document.getElementById("fps").appendChild(stats.getDomElement());
 				setInterval(function() {
 					stats.update();
-				}, 1000 / 900);
+				}, 1000 / 60);
 			}
 
 			function getCache(textureSize, fullScreen) {
@@ -77,12 +80,9 @@
 					<div id="fps"></div>
 				</div>
 				<canvas id="bubble">
-
-					<canvas id="backCanvas" height = "800" width = "1600" >
-
+					<canvas id="backCanvas" height = "1200" width = "1200" >
 						<video controls autoplay  id = "video" >
 							<source src="" type="video/mp4" >
-
 							Your browser does not support the video tag.
 						</video>
 						Sorry, your browser does not support the canvas element

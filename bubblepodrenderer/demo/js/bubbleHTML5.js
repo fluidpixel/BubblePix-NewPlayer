@@ -181,132 +181,40 @@
 	var rzCos = undefined;
 	//only gets called on sphere init
 	var calculateVector = function(h, v) {
-		// Calculate vector from focus point (Origin, so can ignor) to pixel
-
 		V[X] = (hs_ch * h) - hhs;
 
 		// V[Y] always the same as view frame doesn't mov
 		V[Z] = (vs_cv * v) - hvs;
 
-		// Vector (L) from S where m*V (m is an unknown scalar) intersects
-		// surface of sphere is as follows
-		//
-		// <pre>
-		// L = F + mV - S
-		//
-		//    ,-------.
-		//   /         \ -----m------
-		//  |     S<-L->|       <-V->F
-		//   \         /
-		//    `-------'
-		//
-		// L and m are unknown so find magnitude of vectors as the magnitude
-		// of L is the radius of the sphere
-		//
-		// |L| = |F + mV - S| = r
-		//
-		// Can be rearranged to form a quadratic
-		//
-		// 0 = am&sup2; +bm + c
-		//
-		// and solved to find m, using the following formula
-		//
-		// <pre>
-		//              ___________
-		// m = ( -b &PlusMinus; \/(b&sup2;) - 4ac ) /2a
-		// </pre>
-		//
-		// r = |F + mV - S|
-		//       __________________________________________________
-		// r = v(Fx + mVx -Sx)&sup2; + (Fy + mVy -Sy)&sup2; + (Fz + mVz -Sz)&sup2;
-		//
-		// r&sup2; = (Fx + mVx -Sx)&sup2; + (Fy + mVy -Sy)&sup2; + (Fz + mVz -Sz)&sup2;
-		//
-		// r&sup2; = (Fx + mVx -Sx)&sup2; + (Fy + mVy -Sy)&sup2; + (Fz + mVz -Sz)&sup2;
-		//
-		// 0 = Fx&sup2; + FxVxm -FxSx + FxVxm + Vx&sup2;m&sup2; -SxVxm -SxFx -SxVxm + Sx&sup2;
-		//    +Fy&sup2; + FyVym -FySy + FyVym + Vy&sup2;m&sup2; -SyVym -SyFy -SyVym + Sy&sup2;
-		//    +Fz&sup2; + FzVzm -FzSz + FzVzm + Vz&sup2;m&sup2; -SzVzm -SzFz -SzVzm + Sz&sup2; - r&sup2;
-		//
-		// 0 = Vx&sup2;m&sup2;          + FxVxm + FxVxm -2SxVxm    + Fx&sup2; -FxSx -SxFx + Sx&sup2;
-		//    +Vy&sup2;m&sup2;          + FyVym + FyVym -2SyVym    + Fy&sup2; -FySy -SyFy + Sy&sup2;
-		//    +Vz&sup2;m&sup2;          + FzVzm + FzVzm -2SzVzm    + Fz&sup2; -FzSz -SzFz + Sz&sup2; - r&sup2;
-		//
-		// 0 = (Vx&sup2; + Vy&sup2; + Vz&sup2;)m&sup2;  + (FxVx + FxVx -2SxVx)m    + Fx&sup2; - 2FxSx + Sx&sup2;
-		//                          + (FyVy + FyVy -2SyVy)m    + Fy&sup2; - 2FySy + Sy&sup2;
-		//                          + (FzVz + FzVz -2SzVz)m    + Fz&sup2; - 2FzSz + Sz&sup2; - r&sup2;
-		//
-		// 0 = |Vz|m&sup2;  + (FxVx + FxVx -2SxVx)m    + |F| - 2FxSx + |S|
-		//             + (FyVy + FyVy -2SyVy)m          - 2FySy
-		//             + (FyVy + FyVy -2SyVy)m          - 2FySy       - r&sup2;
-		//
-		// a = |Vz|
-		// b =
-		// c = Fx&sup2; + Sx&sup2; -2FxSx + Fy&sup2; + Sy&sup2; -2FySy + Fz&sup2; + Sz&sup2; -2FzSz - r&sup2;
-		// for current F and S this means c = Sy&sup2; - r&sup2;
-		// </pre>
-
-		// Where a, b and c are as in the code.
-		// Only the solution for the negative square root term is needed as the
-		// closest intersection is wanted. The other solution to m would give
-		// the intersection of the 'back' of the sphere.
-
 		a = V[X] * V[X] + VY2 + V[Z] * V[Z];
 
 		s = (b2 - a * c4);
-		// the square root term
-
-		// if s is negative then there are no solutions to m and the
-		// sphere is not visible on the current pixel on the canvas
-		// so only draw a pixel if the sphere is visable
-		// 0 is a special case as it is the 'edge' of the sphere as there
-		// is only one solution. (I have never seen it happen though)
-		// of the two solutions m1 & m2 the nearest is m1, m2 being the
-		// far side of the sphere.
 
 		if (s > 0) {
 
-			if (rySin == undefined) {
-				rzSin = Math.sin(rz);
-				rzCos = Math.cos(rz);
-				rySin = Math.sin(ry);
-				ryCos = Math.cos(ry);
-			}
+			var srz = Math.sin(rz);
+			var crz = Math.cos(rz);
+			var sry = Math.sin(ry);
+			var cry = Math.cos(ry);
 
 			m1 = ((-b) - (Math.sqrt(s))) / (2 * a);
 			Y = Y;
 
 			L[X] = m1 * V[X];
-			//    bx+m1*V[X];
 			L[Y] = by + (m1 * V[Y]);
 			L[Z] = m1 * V[Z];
-			//    bz+m1*V[Z];
-
-			// Do a couple of rotations on L
 
 			var lx = L[X];
-			var srz = rzSin;
-			var crz = rzCos;
 			L[X] = lx * crz - L[Y] * srz;
 			L[Y] = lx * srz + L[Y] * crz;
-
-			//      calcL(lx, L[Y], rz);
-
 			var lz;
 			lz = L[Z];
-			var sry = rySin;
-			var cry = ryCos;
 			L[Z] = lz * cry - L[Y] * sry;
 			L[Y] = lz * sry + L[Y] * cry;
 
-			//     calcL(lz, L[Y], ry);
-
-			// Calculate the position that this location on the sphere
-			// coresponds to on the texture
-
 			var lh = textureWidth + textureWidth * (Math.atan2(L[Y], L[X]) + Math.PI ) / (2 * Math.PI);
 			var lv = textureWidth * Math.floor(textureHeight - 1 - (textureHeight * (Math.acos(L[Z] / r) / Math.PI) % textureHeight));
-			//console.log("lh " + lh + " lv " + lv);
+			
 			return {
 				lv : lv,
 				lh : lh
@@ -361,13 +269,12 @@
 
 							if (pixel == 0) {
 								var diff = (new Date().getTime() - timerStart);
-								console.log("Time Taken T Load to 0: " + diff);
+								//console.log("Time Taken T Load to 0: " + diff);
 							}
 							if (pixel == (cWidth * cHeight) - 1) {
 								var diff = (new Date().getTime() - timerStart);
-								console.log("Time Taken TO Load to pixel length: " + diff);
+								//console.log("Time Taken TO Load to pixel length: " + diff);
 							}
-
 						}
 					}
 					return fullScreenCache[pixel];
@@ -380,13 +287,12 @@
 							smallScreenCache[pixel] = calculateVector(h, v);
 							if (pixel == 0) {
 								var diff = (new Date().getTime() - timerStart);
-								console.log("Time Taken T Load to 0: " + diff);
+								//console.log("Time Taken T Load to 0: " + diff);
 							}
 							if (pixel == (cWidth * cHeight) - 1) {
 								var diff = (new Date().getTime() - timerStart);
-								console.log("Time Taken TO Load to pixel length: " + diff);
+								//console.log("Time Taken TO Load to pixel length: " + diff);
 							}
-
 						}
 					}
 					return smallScreenCache[pixel];
@@ -398,11 +304,11 @@
 				 var h = pixel - v * cWidth;
 				 if (pixel == 0) {
 				 var diff = (new Date().getTime() - timerStart);
-				 console.log("Time Taken T Load to 0: " + diff);
+				 //console.log("Time Taken T Load to 0: " + diff);
 				 }
 				 if (pixel == (cWidth * cHeight) - 1) {
 				 var diff = (new Date().getTime() - timerStart);
-				 console.log("Time Taken TO Load to pixel length: " + diff);
+				 //console.log("Time Taken TO Load to pixel length: " + diff);
 				 }
 				 cache[pixel] = calculateVector(h, v);
 
@@ -428,10 +334,10 @@
 				return;
 				stats.firstMs = new Date() - time;
 				this.renderFrame = this.sumRF;
-				console.log(rotCache);
+				//console.log(rotCache);
 				for (var key in rotCache) {
 					if (rotCache[key] > 1) {
-						console.log(rotCache[key]);
+						//console.log(rotCache[key]);
 					}
 				}
 			},
@@ -454,7 +360,6 @@
 
 				/*
 				 yRotVal *= ( (time - lastTime) * posDelta)/10;
-
 				 yRotVal = Math.floor(yRotVal);*/
 				startTime2Render = new Date().getTime();
 
@@ -468,9 +373,9 @@
 
 					} else {
 						if (!mouseIsDown) {
-							yMovement -= 8;
-							yRotVal -= 8;
-							yRot -= 8;
+							yMovement -= 12;
+							yRotVal -= 12;
+							yRot -= 12;
 						}
 					}
 				}
@@ -481,9 +386,9 @@
 					} else {
 						if (!mouseIsDown) {
 							//	lastLegitYRot += 15;
-							yMovement += 8;
-							yRotVal += 8;
-							yRot += 8;
+							yMovement += 12;
+							yRotVal += 12;
+							yRot += 12;
 						}
 					}
 				}
@@ -514,42 +419,28 @@
 					else
 						processIndex = 2;
 				}
+
 				while (pixel--) {
 
 					switch(processIndex) {
-						case 0: {
-							vector = getVector(pixel);
-							break;
-						}
 						case 1:
 							vector = smallScreenCache[pixel];
-							/*
-							 if (pixel % 20000 === 0) {
-							 var time2Render = (new Date().getTime() - startTime2Render);
-							 if (time2Render > 10) {
-							 console.log("BAIL ");
-							 return;
-							 }
-							 }*/
-
 							break;
 						case 2:
 							vector = fullScreenCache[pixel];
-
 							break;
 						default:
 							vector = getVector(pixel);
 					}
 
-					var lh = ~~(vector.lh + xRotNumber) % textureWidth;
+					var lh = Math.round(vector.lh + xRotNumber) % textureWidth;
 
 					//YAxis Rotation
-					var lv;
+					var lv = (vector.lv);
 
+					
 					if (!isUnWrappedImage)
-						lv = (vector.lv + finalYRotation);
-					else
-						lv = (vector.lv);
+						lv += finalYRotation;
 
 					var idxT = ((lh + lv) << 2);
 
@@ -558,18 +449,16 @@
 					canvasData[++idxC] = textureData[++idxT];
 					canvasData[++idxC] = textureData[++idxT];
 					idxC -= 7;
-
 				}
 
 				if (yCheckBool) {
 					if (!isLegitYRot()) {
 						if (!mouseIsDown && (failedBottomY || failedTopY)) {
-							console.log("Non Legit yRot: " + yRotVal);
-
+							//console.log("Non Legit yRot: " + yRotVal);
 						}
 					} else {
 						if (!mouseIsDown && (failedBottomY || failedTopY)) {
-							console.log("Legit yRot: " + yRotVal);
+							//console.log("Legit yRot: " + yRotVal);
 						}
 						lastLegitYRot = yRotVal;
 						failedBottomY = false;
@@ -584,31 +473,38 @@
 				if (isFullScreen)
 					multiplier /= 3;
 				xRot += xNumber * multiplier * (time - lastTime) * posDelta;
-
+				//bcv.putImageData(canvasImageData, 0, 0);
 				putdata();
 				lastTime = time;
 
 				var time2Render = (new Date().getTime() - startTime2Render);
-				//console.log("Time to render: " + time2Render);
+				//	//console.log("Time to render: " + time2Render);
 			}
 		};
 	};
+
 	var yCheckBool = false;
 	function putdata() {
-		// do some stuff
-		setTimeout(g, 15);
+		/*
+		 var len = cWidth * cHeight * 4;
+		 var segmentLength = len / workersCount;
+		 var blockSize = cHeight / workersCount;
+
+		 for (var index = 0; index < workersCount; index++) {
+		 var canvasData = bcv.getImageData(0, blockSize * index, cWidth, blockSize);
+		 worker[index].postMessage({
+		 data : canvasData,
+		 index : index,
+		 length : segmentLength,
+		 textureData: textureData
+		 });
+		 }*/
+		gCtx.putImageData(canvasImageData, 0, 0);
 	}
 
 	function g() {
 		// more stuff
-		/*
-		worker.postMessage({
-					'cmd' : 'start',
-					'imageData' : canvasImageData			
-				});*/
-		
-		
-		gCtx.putImageData(canvasImageData, 0, 0);
+
 	}
 
 	function readFromCache() {
@@ -623,7 +519,7 @@
 	}
 
 	function calculateR() {
-		console.log("Calculating r");
+		//console.log("Calculating r");
 		rx = RX * Math.PI / 180;
 		ry = RY * Math.PI / 180;
 		rz = RZ * Math.PI / 180;
@@ -642,8 +538,8 @@
 		var maxPixel = innerHeight * innerImageMaxDiam;
 		maxPixel += pixelOffset;
 		maxPixel = Math.floor(maxPixel);
-		console.log(minPixel + " min:max " + maxPixel);
-		console.log(outerHeight + " outWidth:outHeight " + outerWidth);
+		//console.log(minPixel + " min:max " + maxPixel);
+		//console.log(outerHeight + " outWidth:outHeight " + outerWidth);
 		var buf = [];
 
 		var pixelIndex = 0;
@@ -679,9 +575,9 @@
 		var newHeight = maxPixel - minPixel;
 		var startPixel = Math.floor(outerHeight / 2 - newHeight / 2);
 		var bufferIndex = 0;
-		console.log("Start Y " + startPixel);
-		console.log("New Height " + newHeight);
-		console.log("OuterHeight" + outerHeight);
+		//console.log("Start Y " + startPixel);
+		//console.log("New Height " + newHeight);
+		//console.log("OuterHeight" + outerHeight);
 		textureClampHeight = newHeight;
 		for (var u = 0; u < outerWidth; u++) {
 			for (var v = startPixel; v <= startPixel + newHeight; v++) {
@@ -700,36 +596,25 @@
 	}
 
 	function convertToEqui(imageData, width, height, offsetWidth, offsetHeight) {
-		/*
-		//console.log("Unwrapped Height" + height);
-		//console.log("Unwrapped Width" + width);
-		//console.log("Unwrapped HeightOffset" + offsetHeight);
-		//console.log("Unwrapped WidthOffset" + offsetWidth);
-		*/
-
-		//create new texture from old image
-		//console.log("OH: " + offsetHeight);
-		//console.log("OW: " + offsetWidth);
 
 		if (offsetHeight > 0) {
 			var multiplier = (height + offsetHeight * 3) / height;
 			bubble_details.maxDiam /= multiplier;
 			bubble_details.minDiam /= multiplier;
-			//console.log("Multiplier: " + multiplier);
 		} else if (offsetWidth > 0) {
 			var multiplier = (width + offsetWidth * 3 ) / width;
 			bubble_details.maxDiam /= multiplier;
 			bubble_details.minDiam /= multiplier;
-			//console.log("Multiplier: " + multiplier);
 		}
-		//console.log("newMinDiam: " + bubble_details.minDiam);
-		//console.log("newMaxDiam: " + bubble_details.maxDiam);
+		//console.log("mindiam: " + bubble_details.minDiam);
+		//console.log("maxdiam: " + bubble_details.maxDiam);
 		var pixelAmount = 0;
 		var angleOffsetRadians = Math.PI;
 		var fullHeight = width / (2 * Math.PI );
 		textureClampHeight = fullHeight;
 		var replacePixel = Math.floor((height * width) / 2 - (fullHeight * width ) / 2);
 		replacePixel *= 4;
+		//console.log("replacePixel " + replacePixel);
 		var texImageData = imageData.data;
 		var minRadius = bubble_details.minDiam * 0.5;
 		var maxRadius = bubble_details.maxDiam * 0.5;
@@ -769,8 +654,8 @@
 			}
 		}
 		var bufIndex = buf.length - 1;
-		////console.log("Pixels affected: " + pixelAmount);
-
+		//////console.log("Pixels affected: " + pixelAmount);
+		//console.log("bufindex: " + bufIndex);
 		for (var i = 0; i < height * width * 4; i += 4) {
 			if (i != replacePixel) {
 				texImageData[i] = 0;
@@ -789,6 +674,7 @@
 			}
 		}
 		buf = null;
+		//console.log("imageData.length " + imageData.data.length);
 		return imageData;
 	}
 
@@ -822,7 +708,8 @@
 				var newImageData = undefined;
 				newWidth = Math.floor(newWidth);
 				newHeight = Math.floor(newHeight);
-
+				backcvs = document.getElementById('backCanvas');
+				bcv = backcvs.getContext("2d");
 				if (resize) {
 					gImage.width = newWidth;
 					gImage.height = newHeight;
@@ -830,10 +717,10 @@
 					gCtxImg.drawImage(aImg, 0, 0, newWidth, newHeight);
 					newImageData = gCtxImg.getImageData(0, 0, newWidth, newHeight);
 					//var newData = newImageData.zz
-					console.log("Resized IMAGEDATA Bytes: " + newImageData.data.length);
-					console.log("Have Resized Image");
+					//console.log("Resized IMAGEDATA Bytes: " + newImageData.data.length);
+					//console.log("Have Resized Image");
 					gCtxImg.clearRect(0, 0, newWidth, newHeight);
-					console.log("NEWIMAGEDATA: " + newImageData.data.length);
+					//console.log("NEWIMAGEDATA: " + newImageData.data.length);
 				}
 				var max = Math.max(newWidth, newHeight);
 				if (max) {
@@ -842,8 +729,6 @@
 					textureHeight = max;
 				}
 
-				console.log("Texture Width = " + newWidth);
-				console.log("Texture height = " + newHeight);
 				gImage.width = textureWidth;
 				gImage.height = textureHeight;
 				gCtxImg = gImage.getContext("2d");
@@ -854,35 +739,86 @@
 					gCtxImg.drawImage(aImg, 0, Math.floor((max - newHeight) / 2));
 				}
 				textureImageData = gCtxImg.getImageData(0, 0, textureHeight, textureWidth);
-				console.log("FINALIMAGEDATA: " + textureImageData.data.length);
+				
 				gCtxImg = null;
 				if (resize) {
 					textureData = cropBubblePodImage(textureImageData, textureWidth, textureHeight, 0, newHeight);
 				} else {
 					textureData = cropBubblePodImage(textureImageData, textureWidth, textureHeight, 0, aImg.height);
 				}
-				console.log("Final Texture Width = " + textureWidth + "Height: " + textureHeight);
+				
 			}
 		} else if (isUnWrappedImage && !isUnWrappedVideo) {
 			// mad bubblepix image
 			if (needsReloading) {
-				gImage = document.createElement('canvas');
-				var max = Math.max(aImg.naturalWidth, aImg.naturalHeight);
-				//console.log("Texture Width = " + aImg.naturalWidth);
-				console.log("Original Texture Width = " + aImg.naturalWidth + " Height: " + aImg.naturalHeight);
-				textureClampHeight = aImg.naturalHeight * (bubble_details.minDiam - bubble_details.maxDiam);
-				//should give textureClampHeight taking into account cropping of image
+				//resizing
+				//console.log("version 5");
+				var subsampled = false;
+				var newWidth = aImg.width;
+				var newHeight = aImg.height;
+				var oldWidth = aImg.width;
+				backcvs = document.getElementById('backCanvas');
+				bcv = backcvs.getContext("2d");
 
-				//console.log("Texture height = " + aImg.naturalHeight);
-				textureWidth = max;
-				textureHeight = max;
-				gImage.width = max;
-				gImage.height = max;
+				if (detectSubsampling(aImg)) {
+					newHeight /= detectVerticalSquash(aImg, newWidth, newHeight);
+					if (oldWidth > bubble_details.MAX_WIDTH) {
+						newHeight *= (bubble_details.MAX_WIDTH / newWidth);
+						newWidth = bubble_details.MAX_WIDTH;
+					}
+					newWidth = Math.floor(newWidth);
+					newHeight = Math.floor(newHeight);
+					subsampled = true;
+					backcvs.width = newWidth;
+					backcvs.height = newHeight;
+					bcv = backcvs.getContext("2d");
+					bcv.drawImage(aImg, 0, 0, newWidth, newHeight);
+					newWidth = bubble_details.MAX_WIDTH - 1;
+					newHeight = newWidth * (aImg.naturalHeight / aImg.naturalWidth);
+					newWidth = Math.floor(newWidth);
+					newHeight = Math.floor(newHeight);
+
+					gImage = document.createElement('canvas');
+					gCtxImg = gImage.getContext("2d");
+					var newImageData = undefined;
+
+					newImageData = bcv.getImageData(0, 0, newWidth, newHeight);
+					gCtxImg.clearRect(0, 0, newWidth, newHeight);
+
+				} else {
+
+					if (oldWidth > bubble_details.MAX_WIDTH) {
+						newHeight *= bubble_details.MAX_WIDTH / newWidth;
+						newWidth = bubble_details.MAX_WIDTH;
+					}
+					backcvs.width = newWidth;
+					backcvs.height = newHeight;
+					bcv = backcvs.getContext("2d");
+					bcv.drawImage(aImg, 0, 0, newWidth, newHeight);
+					gImage = document.createElement('canvas');
+					gCtxImg = gImage.getContext("2d");
+					var newImageData = undefined;
+					newWidth = Math.floor(newWidth);
+					newHeight = Math.floor(newHeight);
+					newImageData = bcv.getImageData(0, 0, newWidth, newHeight);
+
+				}
+
+				//end resizing
+				var max = Math.max(newWidth, newHeight);
+				if (max) {
+					textureWidth = max;
+					textureClampHeight = newHeight;
+					textureHeight = max;
+				}
+				gCtxImg.clearRect(0, 0, newWidth, newHeight);
+				gImage.width = textureWidth;
+				gImage.height = textureHeight;
 				gCtxImg = gImage.getContext("2d");
-				gCtxImg.clearRect(0, 0, max, max);
-				gCtxImg.drawImage(aImg, Math.floor((max - aImg.naturalWidth) / 2), Math.floor((max - aImg.naturalHeight) / 2));
-				textureImageData = gCtxImg.getImageData(0, 0, textureWidth, textureHeight);
-				textureImageData = convertToEqui(textureImageData, textureWidth, textureHeight, Math.floor((max - aImg.naturalWidth) / 2), Math.floor((max - aImg.naturalHeight) / 2));
+				gCtxImg.clearRect(0, 0, textureHeight, textureWidth);
+				gCtxImg.putImageData(newImageData, Math.floor((max - newWidth) / 2), Math.floor((max - newHeight) / 2));
+				textureImageData = gCtxImg.getImageData(0, 0, textureHeight, textureWidth);
+				textureImageData = convertToEqui(textureImageData, textureWidth, textureHeight, Math.floor((max - newWidth) / 2), Math.floor((max - newHeight) / 2));
 				textureData = textureImageData.data;
 			}
 		} else {
@@ -891,33 +827,77 @@
 				gImage = document.createElement('canvas');
 				backcvs = document.getElementById('backCanvas');
 				bcv = backcvs.getContext("2d");
-				var max = Math.max(cWidth, cHeight);
-				bcv.drawImage(aImg, 0, 0, cWidth, cHeight);
-				var apx = bcv.getImageData(0, 0, cWidth, cHeight);
-				var vidHeight = backcvs.height;
-				var vidWidth = backcvs.width;
+				var backCWidth = backcvs.width;
+				var backCHeight = backcvs.height;
+				////console.log("backCanvasWidth " + backCWidth + " backCanvasHeight = " + backCHeight);
+				bcv.drawImage(aImg, 0, 0, backCWidth, backCHeight);
 
+				var max = Math.max(backCWidth, backCHeight);
+
+				var apx = bcv.getImageData(0, 0, backCWidth, backCHeight);
+				apx = convertToEqui(apx, backCWidth, backCHeight, 0, 0);
+				////console.log(apx.data.length);
+				max = Math.max(cWidth, cHeight);
 				textureWidth = max;
 				textureHeight = max;
 				gImage.width = max;
 				gImage.height = max;
 				gCtxImg = gImage.getContext("2d");
 				gCtxImg.clearRect(0, 0, max, max);
+
 				gCtxImg.putImageData(apx, Math.floor((max - cWidth) / 2), Math.floor((max - cHeight) / 2));
 				//gCtxImg.drawImage(aImg, 0, 0);
 				textureImageData = gCtxImg.getImageData(0, 0, max, max);
-
 				frames++;
-				textureImageData = convertToEqui(textureImageData, max, max, Math.floor((max - cWidth) / 2), Math.floor((max - cHeight) / 2));
 				setTimeout(copyImageToBuffer, 0, aImg);
 				textureData = textureImageData.data;
 			}
 		}
 	}
 
+	function detectVerticalSquash(img, iw, ih) {
+		var canvas = document.createElement('canvas');
+		canvas.width = 1;
+		canvas.height = ih;
+		var ctx = canvas.getContext('2d');
+		ctx.drawImage(img, 0, 0);
+		var data = ctx.getImageData(0, 0, 1, ih).data;
+		// search image edge pixel position in case it is squashed vertically.
+		var sy = 0;
+		var ey = ih;
+		var py = ih;
+		while (py > sy) {
+			var alpha = data[(py - 1) * 4 + 3];
+			if (alpha === 0) {
+				ey = py;
+			} else {
+				sy = py;
+			}
+			py = (ey + sy) >> 1;
+		}
+		var ratio = (py / ih);
+		return (ratio === 0) ? 1 : ratio;
+	}
+
+	function detectSubsampling(img) {
+		var iw = img.naturalWidth, ih = img.naturalHeight, ssCanvas, ssCTX;
+
+		if (iw * ih > 1024 * 1024) {// Subsampling may happen over megapixel image
+			ssCanvas = document.createElement('canvas');
+			ssCanvas.width = ssCanvas.height = 1;
+			ssCTX = ssCanvas.getContext('2d');
+			ssCTX.drawImage(img, -iw + 1, 0);
+			// Subsampled image becomes half smaller in rendering size.
+			// Check alpha channel value to confirm image is covering edge pixel or not.
+			// If alpha value is 0 image is not covering, hence subsampled.
+			return ssCTX.getImageData(0, 0, 1, 1).data[3] === 0;
+		}
+		return false;
+	}
+
 	var frames = 0;
 	function setFOV(fov) {
-		//console.log("Changing FOV to " + fov);
+		////console.log("Changing FOV to " + fov);
 		var aspect = cWidth / cHeight;
 		FOV = fov;
 		ry = 90;
@@ -945,9 +925,30 @@
 		b2 = Math.pow(b, 2);
 	}
 
-	var worker = null;
+	/*
+	 var workersCount = 4;
+	 var worker = [new Worker("js/doWork.js"), new Worker("js/doWork.js"), new Worker("js/doWork.js"), new Worker("js/doWork.js")];*/
+
 	var blob = null;
 	var errorHandler;
+	var finished = 0;
+	var onWorkEnded = function(e) {
+
+		var canvasData = e.data.result;
+		var index = e.data.index;
+		var blockSize = cHeight / workersCount;
+		gCtx.putImageData(canvasData, 0, blockSize * index);
+
+		finished++;
+
+		if (finished == workersCount) {
+			//var diff = new Date() - start;
+			//log.innerHTML = "Process done in " + diff + " ms";
+			//console.log("Finished");
+			finished = 0;
+		}
+	};
+
 	this.initHTML5 = function(isEqui, textureUrl, textureXMLUrl, canvasWidth, textureResizeWidth, sScreenCache, fScreenCache) {
 		//Set parameters functions for EITHER unwrapped(bubblepix) image (A), or Equi Parameters (B) for Equirectangular images
 		//Must be set before createSphere is called
@@ -955,14 +956,13 @@
 		//A: setUnwrappedParameters (uPerpendicular, vPerpendicular, minDiameter, maxDiameter, fov, canvasWidth)
 		//B: setEquiParameters(FOV,canvasWidth);
 		//window.requestFileSystem(window.TEMPORARY, 1024 * 1024, onInitFs, errorHandler);
-	/*
-		worker = new Worker('js/doWork.js');
-	
-			worker.addEventListener('message', function(e) {
-				console.log('Worker said: ', e.data);
-			}, false);
-	*/
-	
+
+		/*
+		for (var index = 0; index < workersCount; index++) {
+
+		worker[index].onmessage = onWorkEnded;
+		}*/
+
 		//worker.postMessage('Hello World');
 		//worker.postMessage("my message");
 
@@ -986,7 +986,7 @@
 		if (isUnWrappedImage) {
 			setUnwrappedParameters(0.54, 0.44, 0.10, 0.5, 18, canvasWidth, isVideo);
 		} else {
-			setEquiParameters(18, canvasWidth);
+			setEquiParameters(11, canvasWidth);
 		}
 		//setEquiParameters(20, 400);
 		//create sphere with texture
@@ -1012,7 +1012,7 @@
 		gCanvas.height = canWidth;
 		gCanvas.width = canHeight;
 
-		console.log("width: " + gCanvas.width);
+		//console.log("width: " + gCanvas.width);
 
 		if (loadTexture) {
 			setEventListeners(gCanvas);
@@ -1034,8 +1034,8 @@
 			xMovement = 0.000002;
 
 		setFOV(FOV);
-		//console.log("canHeight: " + cHeight);
-		//console.log("canWidth: " + cWidth);
+		////console.log("canHeight: " + cHeight);
+		////console.log("canWidth: " + cWidth);
 		if (loadTexture && !isUnWrappedVideo) {
 			//loading image for first time
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
@@ -1046,7 +1046,7 @@
 				earth = sphere(false);
 				renderAnimationFrame = function(time) {
 					earth.renderFrame(time);
-					setTimeout(window.requestAnimationFrame, 20, renderAnimationFrame);
+					setTimeout(window.requestAnimationFrame, 10, renderAnimationFrame);
 				};
 				window.requestAnimationFrame(renderAnimationFrame);
 				cancelLoadingScreen();
@@ -1099,29 +1099,26 @@
 
 		bubble_details.uPerp = xml_details.cY;
 		bubble_details.vPerp = 1 - xml_details.cX;
-		console.log("uPerp: " + bubble_details.uPerp);
-		console.log("vPerp: " + bubble_details.vPerp);
+		//console.log("uPerp: " + bubble_details.uPerp);
+		//console.log("vPerp: " + bubble_details.vPerp);
 		bubble_details.maxDiam = xml_details.height;
 		bubble_details.minDiam = xml_details.innerCircle * bubble_details.maxDiam;
-		//console.log("uPerp " + bubble_details.uPerp);
-		//console.log("vPerp " + bubble_details.vPerp);
-		//console.log("minDiam " + bubble_details.minDiam);
-		//console.log("maxDiam " + bubble_details.maxDiam);
+
 	}
 
 	function loadXML(xml) {
 		var xhttp;
 		if (window.XMLHttpRequest) {
-			//console.log("New HTTP Request " + xml);
+			////console.log("New HTTP Request " + xml);
 			xhttp = new XMLHttpRequest();
 
 		} else {
-			//console.log("New ActiveX Request");
+			////console.log("New ActiveX Request");
 			xhttp = new ActiveXObject("Microsoft.XMLHTTP");
 		}
 
 		xhttp.open("GET", xml, false);
-		//console.log("sending");
+		////console.log("sending");
 		try {
 			xhttp.send(null);
 			return xhttp.responseXML;
@@ -1129,7 +1126,7 @@
 			alert("ERROR: XML request failed.\n" + e);
 			return false;
 		}
-		//console.log("sent");
+		////console.log("sent");
 
 	}
 
@@ -1182,38 +1179,40 @@
 			el.addEventListener("click", fullScreenButtonClick, false);
 		} else if (el.attachEvent) {
 			el.attachEvent('onclick', fullScreenButtonClick);
-			////console.log(el + " 2");
-		}
-		el = null;
-		
-		var el = document.getElementById("fullscreen_off");
-
-		if (el.addEventListener) {
-		el.addEventListener("click", fullScreenButtonClick, false);
-		} else if (el.attachEvent) {
-		el.attachEvent('onclick', fullScreenButtonClick);
-		////console.log(el + " 2");
+			//////console.log(el + " 2");
 		}
 		el = null;
 
-		el = document.getElementById("rotate");
+		/*
+		 var el = document.getElementById("fullscreen_off");
 
-		if (el.addEventListener) {
-		el.addEventListener("click", toggleRotateButtonClick, false);
-		} else if (el.attachEvent) {
-		el.attachEvent('onclick', toggleRotateButtonClick);
-		////console.log(el + " 2");
-		}
-		el = null;
+		 if (el.addEventListener) {
+		 el.addEventListener("click", fullScreenButtonClick, false);
+		 } else if (el.attachEvent) {
+		 el.attachEvent('onclick', fullScreenButtonClick);
+		 //////console.log(el + " 2");
+		 }
+		 el = null;
 
-		el = document.getElementById("rotate_off");
+		 el = document.getElementById("rotate");
 
-		if (el.addEventListener) {
-		el.addEventListener("click", toggleRotateButtonClick, false);
-		} else if (el.attachEvent) {
-		el.attachEvent('onclick', toggleRotateButtonClick);
-		////console.log(el + " 2");
-		}
+		 if (el.addEventListener) {
+		 el.addEventListener("click", toggleRotateButtonClick, false);
+		 } else if (el.attachEvent) {
+		 el.attachEvent('onclick', toggleRotateButtonClick);
+		 //////console.log(el + " 2");
+		 }
+		 el = null;
+
+		 el = document.getElementById("rotate_off");
+
+		 if (el.addEventListener) {
+		 el.addEventListener("click", toggleRotateButtonClick, false);
+		 } else if (el.attachEvent) {
+		 el.attachEvent('onclick', toggleRotateButtonClick);
+		 //////console.log(el + " 2");
+		 }*/
+
 		el = null;
 
 		//$(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange',fullscreenChanged);
@@ -1251,16 +1250,16 @@
 	 fs_state = typeof (document.webkitIsFullScreen) == "undefined" ? document.webkitIsFullScreen : document.mozFullScreen;
 	 //ignore_once = !ignore_once; //event is called 2 times per fullscreen
 	 //(don't know why), so i ignore once
-	 //console.log("fullscreen: " + fs_state);
+	 ////console.log("fullscreen: " + fs_state);
 
 	 switch(fs_state) {
 	 case true:
-	 console.log("fullscreen yes");
+	 //console.log("fullscreen yes");
 	 fullScreenButtonClick();
 	 break;
 
 	 case false:
-	 console.log("fullscreen no");
+	 //console.log("fullscreen no");
 	 fullScreenButtonClick();
 	 break;
 	 }
@@ -1317,7 +1316,7 @@
 	}
 
 	function reload() {
-		console.log("reloading");
+		//console.log("reloading");
 		createBubble(document.getElementById("bubble"), "", "");
 	}
 
@@ -1418,7 +1417,7 @@
 			var pixel = cWidth * cHeight;
 			var total = 0;
 			var testPixels = (cWidth * cHeight) - (cWidth * (cHeight - 1));
-			//console.log("Testing " + testPixels + " (from " + pixel + " to " + ((cWidth * cHeight) - testPixels) + ")");
+			////console.log("Testing " + testPixels + " (from " + pixel + " to " + ((cWidth * cHeight) - testPixels) + ")");
 			while (pixel-- && pixel > (cWidth * cHeight) - testPixels) {
 
 				var idxC = ~~(pixel * 4);
@@ -1430,7 +1429,7 @@
 				 //early fail check
 				 if (idxC % 300 == 0) {
 				 var result = total / testPixels * 100;
-				 //console.log("result: " + result);
+				 ////console.log("result: " + result);
 				 if (result > threshold) {
 				 failedBottomY = true;
 				 failedBottomYValue = yRotVal;
@@ -1442,7 +1441,7 @@
 			}
 
 			var result = total / testPixels * 100;
-			//console.log("result: " + result);
+			////console.log("result: " + result);
 			if (result > threshold) {
 				failedBottomY = true;
 				failedBottomYValue = yRotVal;
@@ -1474,7 +1473,7 @@
 				 //early fail check
 				 if (idxC % 300 == 0) {
 				 var result = total / testPixels * 100;
-				 //console.log("result: " + result);
+				 ////console.log("result: " + result);
 				 if (result > threshold) {
 				 failedBottomY = false;
 				 failedTopY = true;
@@ -1552,24 +1551,22 @@
 			convertToWebPlayerParams();
 		} else {
 
-			bubble_details.minDiam = 0.1;
-			bubble_details.maxDiam = 0.9;
+			bubble_details.minDiam = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('width'));
+			;
+			bubble_details.maxDiam = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
 		}
 
 		var initStartString = xml.getElementsByTagName("play_objects")[0].getElementsByTagName('auto')[0].getAttribute('init_start');
-		
-		 if (initStartString == 'yes')
-		 {
-		 auto_rotate = true;
-		 document.getElementById("rotate").style.display = 'block';
-		 document.getElementById("rotate_off").style.display = 'none';
-		 }
-		 else
-		 {
-		 auto_rotate = false;
-		 document.getElementById("rotate").style.display = 'none';
-		 document.getElementById("rotate_off").style.display = 'block';
-		 }
+
+		if (initStartString == 'yes') {
+			auto_rotate = true;
+			// document.getElementById("rotate").style.display = 'block';
+			//document.getElementById("rotate_off").style.display = 'none';
+		} else {
+			auto_rotate = false;
+			// document.getElementById("rotate").style.display = 'none';
+			// document.getElementById("rotate_off").style.display = 'block';
+		}
 
 	}
 
