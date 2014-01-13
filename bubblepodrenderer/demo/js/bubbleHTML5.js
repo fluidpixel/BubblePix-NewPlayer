@@ -233,7 +233,8 @@
 		rySin = undefined;
 		rx = null;
 		//textureData = textureImageData.data;
-		canvasData = canvasImageData.data; copyFnc;
+		canvasData = canvasImageData.data;
+		copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -675,27 +676,27 @@
 			}
 		}
 		/*var equicvs = document.getElementById('equi');
-		var ecv = equicvs.getContext("2d");
-		equicvs.width = width;
-		equicvs.height = fullHeight;
-		// Fill screen with red, green, and blue stripes.
+		 var ecv = equicvs.getContext("2d");
+		 equicvs.width = width;
+		 equicvs.height = fullHeight;
+		 // Fill screen with red, green, and blue stripes.
 
-		ecv.fillStyle = "red";
-		ecv.fillRect(0, 0, width, fullHeight);
-		ecv.fillStyle = 'rgb(0,255,0)';
-		var theImage = ecv.getImageData(0, 0, width, fullHeight);
-		var pix = theImage.data;
-		bufIndex = buf.length - 1;
-		for ( i = 0; i < pix.length - 1; i += 4) {
-			pix[i] = buf[bufIndex - 2];
-			pix[i + 1] = buf[bufIndex - 1];
-			pix[i + 2] = buf[bufIndex];
-			pix[i + 3] = 255;
+		 ecv.fillStyle = "red";
+		 ecv.fillRect(0, 0, width, fullHeight);
+		 ecv.fillStyle = 'rgb(0,255,0)';
+		 var theImage = ecv.getImageData(0, 0, width, fullHeight);
+		 var pix = theImage.data;
+		 bufIndex = buf.length - 1;
+		 for ( i = 0; i < pix.length - 1; i += 4) {
+		 pix[i] = buf[bufIndex - 2];
+		 pix[i + 1] = buf[bufIndex - 1];
+		 pix[i + 2] = buf[bufIndex];
+		 pix[i + 3] = 255;
 
-			bufIndex -= 3;
-		}
-		ecv.putImageData(theImage, 0, 0);
-		buf = null;*/
+		 bufIndex -= 3;
+		 }
+		 ecv.putImageData(theImage, 0, 0);
+		 buf = null;*/
 		bubble_details.maxDiam = maxDiamBackup;
 		bubble_details.minDiam = minDiamBackup;
 		//console.log("imageData.length " + imageData.data.length);
@@ -847,7 +848,7 @@
 		} else {
 			//video
 			if (needsReloading) {
-			console.log("Reloading");
+				console.log("Reloading");
 				gImage = document.createElement('canvas');
 				/*
 				 backcvs.width = 1000;
@@ -1092,7 +1093,7 @@
 			//start video
 			var sources = video.getElementsByTagName('source');
 			sources[0].src = textureUrl;
-			
+
 			setCallbacks();
 			video.addEventListener("playing", function(e) {
 				console.log("Metadata loaded");
@@ -1105,11 +1106,11 @@
 				window.requestAnimationFrame(renderAnimationFrame);
 				cancelLoadingScreen();
 			}, false);
-			setTimeout(loadVideo, 1000);		
+			setTimeout(loadVideo, 1000);
 
 		} else if (!loadTexture && isUnWrappedVideo) {
 			//reloading video
-			
+
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			copyImageToBuffer(originalImage);
 			earth = sphere(false);
@@ -1127,41 +1128,88 @@
 		}
 
 	};
-	
-	function setCallbacks()
-	{
-		video.addEventListener('loadstart', function(evt) { console.log("loadstart"); }, false);  
-		video.addEventListener('canplaythrough',function(evt) {  console.log("canplaythorugh"); }, false);
-		video.addEventListener('canplay', function(evt) { console.log("canplay"); }, false);
-		video.addEventListener('loadeddata', function(evt) { console.log("loadeddata"); }, false); 
-		video.addEventListener('loadedmetadata', function(evt) { console.log("loadedmetadata"); }, false);
-			  
-		video.addEventListener('abort', function(evt) { console.log("abort"); }, false);
-		video.addEventListener('emptied', function(evt) { console.log("emptied"); }, false);
-		video.addEventListener('error', function(evt) { console.log("error"); }, false);
-		video.addEventListener('stalled', function(evt) { console.log("stalled"); }, false);
-		video.addEventListener('suspend', function(evt) { console.log("suspend") ;}, false);
-		video.addEventListener('waiting', function(evt) { console.log("waiting"); }, false);
-	 
-		video.addEventListener('pause', function(evt) { console.log("pause"); }, false);
-		video.addEventListener('play', function(evt) { console.log("play"); }, false);
-		video.addEventListener('volumechange', function(evt) { console.log("volumechange"); }, false);
-	 
-		video.addEventListener('playing', function(evt) { console.log("playing"); }, false);
-	 
-		video.addEventListener('seeked', function(evt) { console.log("seeked"); }, false);    
-		video.addEventListener('seeking', function(evt) { console.log("seeking"); }, false);    
-	 
-		video.addEventListener('durationchange', function(evt) { console.log("durationchange"); }, false);
-		video.addEventListener('progress', function(evt) { console.log("progress"); }, false);   
-		video.addEventListener('ratechange', function(evt) { console.log("ratechange"); }, false);   
-	 
-		video.addEventListener('timeupdate', function(evt) { console.log("timeupdate"); }, false);
-	 
-		video.addEventListener('ended', function(evt) { console.log("ended"); }, false); 
-		
-		video.addEventListener('webkitbeginfullscreen', function(evt) { console.log(""); }, false); 
-		video.addEventListener('webkitendfullscreen', function(evt) { console.log(""); }, false); 
+
+	function setCallbacks() {
+		video.addEventListener('loadstart', function(evt) {
+			console.log("loadstart");
+		}, false);
+		video.addEventListener('canplaythrough', function(evt) {
+			console.log("canplaythorugh");
+		}, false);
+		video.addEventListener('canplay', function(evt) {
+			console.log("canplay");
+		}, false);
+		video.addEventListener('loadeddata', function(evt) {
+			console.log("loadeddata");
+		}, false);
+		video.addEventListener('loadedmetadata', function(evt) {
+			console.log("loadedmetadata");
+		}, false);
+
+		video.addEventListener('abort', function(evt) {
+			console.log("abort");
+		}, false);
+		video.addEventListener('emptied', function(evt) {
+			console.log("emptied");
+		}, false);
+		video.addEventListener('error', function(evt) {
+			console.log("error");
+		}, false);
+		video.addEventListener('stalled', function(evt) {
+			console.log("stalled");
+		}, false);
+		video.addEventListener('suspend', function(evt) {
+			console.log("suspend");
+		}, false);
+		video.addEventListener('waiting', function(evt) {
+			console.log("waiting");
+		}, false);
+
+		video.addEventListener('pause', function(evt) {
+			console.log("pause");
+		}, false);
+		video.addEventListener('play', function(evt) {
+			console.log("play");
+		}, false);
+		video.addEventListener('volumechange', function(evt) {
+			console.log("volumechange");
+		}, false);
+
+		video.addEventListener('playing', function(evt) {
+			console.log("playing");
+		}, false);
+
+		video.addEventListener('seeked', function(evt) {
+			console.log("seeked");
+		}, false);
+		video.addEventListener('seeking', function(evt) {
+			console.log("seeking");
+		}, false);
+
+		video.addEventListener('durationchange', function(evt) {
+			console.log("durationchange");
+		}, false);
+		video.addEventListener('progress', function(evt) {
+			console.log("progress");
+		}, false);
+		video.addEventListener('ratechange', function(evt) {
+			console.log("ratechange");
+		}, false);
+
+		video.addEventListener('timeupdate', function(evt) {
+			console.log("timeupdate");
+		}, false);
+
+		video.addEventListener('ended', function(evt) {
+			console.log("ended");
+		}, false);
+
+		video.addEventListener('webkitbeginfullscreen', function(evt) {
+			console.log("");
+		}, false);
+		video.addEventListener('webkitendfullscreen', function(evt) {
+			console.log("");
+		}, false);
 	}
 
 	//convert flash and webgl params to html5
@@ -1175,12 +1223,11 @@
 		bubble_details.minDiam = xml_details.innerCircle * bubble_details.maxDiam;
 
 	}
-	
-	function loadVideo()
-	{
-	video.load();
-	
-	console.log("video loaded");
+
+	function loadVideo() {
+		video.load();
+
+		console.log("video loaded");
 	}
 
 	function loadXML(xml) {
@@ -1342,20 +1389,19 @@
 	 break;
 	 }
 	 });*/
-	 
-	 function playVideo()
-	 {
-	 video.load();
+
+	function playVideo() {
+		video.load();
 		video.pause();
-		setTimeout(function(){
-		video.play();
-		},1000);
+		setTimeout(function() {
+			video.play();
+		}, 1000);
 		return;
-	 }
+	}
 
 	function fullScreenButtonClick() {
 		timerStart = new Date().getTime();
-		
+
 		showLoadingScreen();
 		if (isFullScreen) {
 			var el = document.getElementById("bubbleViewer");
