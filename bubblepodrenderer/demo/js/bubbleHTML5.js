@@ -214,7 +214,7 @@
 
 			var lh = textureWidth + textureWidth * (Math.atan2(L[Y], L[X]) + Math.PI ) / (2 * Math.PI);
 			var lv = textureWidth * Math.floor(textureHeight - 1 - (textureHeight * (Math.acos(L[Z] / r) / Math.PI) % textureHeight));
-			
+
 			return {
 				lv : lv,
 				lh : lh
@@ -233,8 +233,7 @@
 		rySin = undefined;
 		rx = null;
 		//textureData = textureImageData.data;
-		canvasData = canvasImageData.data;
-		copyFnc;
+		canvasData = canvasImageData.data; copyFnc;
 
 		if (canvasData.splice) {
 			//2012-04-19 splice on canvas data not supported in any current browser
@@ -438,7 +437,6 @@
 					//YAxis Rotation
 					var lv = (vector.lv);
 
-					
 					if (!isUnWrappedImage)
 						lv += finalYRotation;
 
@@ -451,7 +449,7 @@
 					idxC -= 7;
 				}
 
-				if (yCheckBool) {
+				if (!isUnWrappedVideo && yCheckBool) {
 					if (!isLegitYRot()) {
 						if (!mouseIsDown && (failedBottomY || failedTopY)) {
 							//console.log("Non Legit yRot: " + yRotVal);
@@ -597,6 +595,8 @@
 
 	function convertToEqui(imageData, width, height, offsetWidth, offsetHeight) {
 
+		var maxDiamBackup = bubble_details.maxDiam;
+		var minDiamBackup = bubble_details.minDiam;
 		if (offsetHeight > 0) {
 			var multiplier = (height + offsetHeight * 3) / height;
 			bubble_details.maxDiam /= multiplier;
@@ -618,6 +618,7 @@
 		var texImageData = imageData.data;
 		var minRadius = bubble_details.minDiam * 0.5;
 		var maxRadius = bubble_details.maxDiam * 0.5;
+
 		var buf = [];
 		for (var i = 0; i < fullHeight; ++i) {
 			var amplitude = ((maxRadius - minRadius ) * (i / fullHeight ) ) + minRadius;
@@ -673,7 +674,30 @@
 				}
 			}
 		}
-		buf = null;
+		/*var equicvs = document.getElementById('equi');
+		var ecv = equicvs.getContext("2d");
+		equicvs.width = width;
+		equicvs.height = fullHeight;
+		// Fill screen with red, green, and blue stripes.
+
+		ecv.fillStyle = "red";
+		ecv.fillRect(0, 0, width, fullHeight);
+		ecv.fillStyle = 'rgb(0,255,0)';
+		var theImage = ecv.getImageData(0, 0, width, fullHeight);
+		var pix = theImage.data;
+		bufIndex = buf.length - 1;
+		for ( i = 0; i < pix.length - 1; i += 4) {
+			pix[i] = buf[bufIndex - 2];
+			pix[i + 1] = buf[bufIndex - 1];
+			pix[i + 2] = buf[bufIndex];
+			pix[i + 3] = 255;
+
+			bufIndex -= 3;
+		}
+		ecv.putImageData(theImage, 0, 0);
+		buf = null;*/
+		bubble_details.maxDiam = maxDiamBackup;
+		bubble_details.minDiam = minDiamBackup;
 		//console.log("imageData.length " + imageData.data.length);
 		return imageData;
 	}
@@ -739,14 +763,14 @@
 					gCtxImg.drawImage(aImg, 0, Math.floor((max - newHeight) / 2));
 				}
 				textureImageData = gCtxImg.getImageData(0, 0, textureHeight, textureWidth);
-				
+
 				gCtxImg = null;
 				if (resize) {
 					textureData = cropBubblePodImage(textureImageData, textureWidth, textureHeight, 0, newHeight);
 				} else {
 					textureData = cropBubblePodImage(textureImageData, textureWidth, textureHeight, 0, aImg.height);
 				}
-				
+
 			}
 		} else if (isUnWrappedImage && !isUnWrappedVideo) {
 			// mad bubblepix image
@@ -786,7 +810,6 @@
 					gCtxImg.clearRect(0, 0, newWidth, newHeight);
 
 				} else {
-
 					if (oldWidth > bubble_details.MAX_WIDTH) {
 						newHeight *= bubble_details.MAX_WIDTH / newWidth;
 						newWidth = bubble_details.MAX_WIDTH;
@@ -824,33 +847,40 @@
 		} else {
 			//video
 			if (needsReloading) {
+			console.log("Reloading");
 				gImage = document.createElement('canvas');
-				backcvs = document.getElementById('backCanvas');
+				/*
+				 backcvs.width = 1000;
+				 backcvs.height = 1000;*/
 				bcv = backcvs.getContext("2d");
+				backcvs.width = aImg.videoWidth;
+				backcvs.height = aImg.videoHeight;
 				var backCWidth = backcvs.width;
 				var backCHeight = backcvs.height;
-				////console.log("backCanvasWidth " + backCWidth + " backCanvasHeight = " + backCHeight);
+				//console.log("imgWidth " + aImg.videoWidth + " imgHeight = " + aImg.videoHeight);
+				//console.log("backCanvasWidth " + backCWidth + " backCanvasHeight = " + backCHeight);
+
 				bcv.drawImage(aImg, 0, 0, backCWidth, backCHeight);
 
 				var max = Math.max(backCWidth, backCHeight);
 
-				var apx = bcv.getImageData(0, 0, backCWidth, backCHeight);
-				apx = convertToEqui(apx, backCWidth, backCHeight, 0, 0);
-				////console.log(apx.data.length);
-				max = Math.max(cWidth, cHeight);
 				textureWidth = max;
 				textureHeight = max;
+				var apx = bcv.getImageData(0, 0, backCWidth, backCHeight);
+
 				gImage.width = max;
 				gImage.height = max;
 				gCtxImg = gImage.getContext("2d");
 				gCtxImg.clearRect(0, 0, max, max);
 
-				gCtxImg.putImageData(apx, Math.floor((max - cWidth) / 2), Math.floor((max - cHeight) / 2));
+				gCtxImg.putImageData(apx, Math.floor((max - backCWidth) / 2), Math.floor((max - backCHeight) / 2));
 				//gCtxImg.drawImage(aImg, 0, 0);
 				textureImageData = gCtxImg.getImageData(0, 0, max, max);
-				frames++;
-				setTimeout(copyImageToBuffer, 0, aImg);
+				textureImageData = convertToEqui(textureImageData, max, max, Math.floor((max - backCWidth) / 2), Math.floor((max - backCHeight) / 2));
 				textureData = textureImageData.data;
+				frames++;
+				setTimeout(copyImageToBuffer, 30, aImg);
+
 			}
 		}
 	}
@@ -1056,26 +1086,30 @@
 		} else if (loadTexture && isUnWrappedVideo) {
 			//loading video for first time
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
-			video = document.getElementsByTagName('video')[0];
-
+			video = document.getElementById('video');
+			console.log("version 8");
+			backcvs = document.getElementById('backCanvas');
 			//start video
 			var sources = video.getElementsByTagName('source');
 			sources[0].src = textureUrl;
-			video.load();
-
-			backcvs = document.getElementById('backCanvas');
-			copyImageToBuffer(video);
-			earth = sphere(false);
-			renderAnimationFrame = function(time) {
-				earth.renderFrame(time);
-				setTimeout(window.requestAnimationFrame, 10, renderAnimationFrame);
-			};
-			window.requestAnimationFrame(renderAnimationFrame);
-			cancelLoadingScreen();
+			
+			setCallbacks();
+			video.addEventListener("playing", function(e) {
+				console.log("Metadata loaded");
+				copyImageToBuffer(video);
+				earth = sphere(false);
+				renderAnimationFrame = function(time) {
+					earth.renderFrame(time);
+					setTimeout(window.requestAnimationFrame, 10, renderAnimationFrame);
+				};
+				window.requestAnimationFrame(renderAnimationFrame);
+				cancelLoadingScreen();
+			}, false);
+			setTimeout(loadVideo, 1000);		
 
 		} else if (!loadTexture && isUnWrappedVideo) {
 			//reloading video
-			video.load();
+			
 			canvasImageData = gCtx.createImageData(gCanvas.width, gCanvas.height);
 			copyImageToBuffer(originalImage);
 			earth = sphere(false);
@@ -1093,6 +1127,42 @@
 		}
 
 	};
+	
+	function setCallbacks()
+	{
+		video.addEventListener('loadstart', function(evt) { console.log("loadstart"); }, false);  
+		video.addEventListener('canplaythrough',function(evt) {  console.log("canplaythorugh"); }, false);
+		video.addEventListener('canplay', function(evt) { console.log("canplay"); }, false);
+		video.addEventListener('loadeddata', function(evt) { console.log("loadeddata"); }, false); 
+		video.addEventListener('loadedmetadata', function(evt) { console.log("loadedmetadata"); }, false);
+			  
+		video.addEventListener('abort', function(evt) { console.log("abort"); }, false);
+		video.addEventListener('emptied', function(evt) { console.log("emptied"); }, false);
+		video.addEventListener('error', function(evt) { console.log("error"); }, false);
+		video.addEventListener('stalled', function(evt) { console.log("stalled"); }, false);
+		video.addEventListener('suspend', function(evt) { console.log("suspend") ;}, false);
+		video.addEventListener('waiting', function(evt) { console.log("waiting"); }, false);
+	 
+		video.addEventListener('pause', function(evt) { console.log("pause"); }, false);
+		video.addEventListener('play', function(evt) { console.log("play"); }, false);
+		video.addEventListener('volumechange', function(evt) { console.log("volumechange"); }, false);
+	 
+		video.addEventListener('playing', function(evt) { console.log("playing"); }, false);
+	 
+		video.addEventListener('seeked', function(evt) { console.log("seeked"); }, false);    
+		video.addEventListener('seeking', function(evt) { console.log("seeking"); }, false);    
+	 
+		video.addEventListener('durationchange', function(evt) { console.log("durationchange"); }, false);
+		video.addEventListener('progress', function(evt) { console.log("progress"); }, false);   
+		video.addEventListener('ratechange', function(evt) { console.log("ratechange"); }, false);   
+	 
+		video.addEventListener('timeupdate', function(evt) { console.log("timeupdate"); }, false);
+	 
+		video.addEventListener('ended', function(evt) { console.log("ended"); }, false); 
+		
+		video.addEventListener('webkitbeginfullscreen', function(evt) { console.log(""); }, false); 
+		video.addEventListener('webkitendfullscreen', function(evt) { console.log(""); }, false); 
+	}
 
 	//convert flash and webgl params to html5
 	function convertToWebPlayerParams() {
@@ -1104,6 +1174,13 @@
 		bubble_details.maxDiam = xml_details.height;
 		bubble_details.minDiam = xml_details.innerCircle * bubble_details.maxDiam;
 
+	}
+	
+	function loadVideo()
+	{
+	video.load();
+	
+	console.log("video loaded");
 	}
 
 	function loadXML(xml) {
@@ -1119,7 +1196,8 @@
 
 		xhttp.open("GET", xml, false);
 		////console.log("sending");
-		try {
+		try
+		{
 			xhttp.send(null);
 			return xhttp.responseXML;
 		} catch(e) {
@@ -1264,9 +1342,20 @@
 	 break;
 	 }
 	 });*/
+	 
+	 function playVideo()
+	 {
+	 video.load();
+		video.pause();
+		setTimeout(function(){
+		video.play();
+		},1000);
+		return;
+	 }
 
 	function fullScreenButtonClick() {
 		timerStart = new Date().getTime();
+		
 		showLoadingScreen();
 		if (isFullScreen) {
 			var el = document.getElementById("bubbleViewer");
@@ -1556,7 +1645,9 @@
 			bubble_details.maxDiam = parseFloat(xml.getElementsByTagName('play_objects')[0].getElementsByTagName('crop')[0].getAttribute('height'));
 		}
 
-		var initStartString = xml.getElementsByTagName("play_objects")[0].getElementsByTagName('auto')[0].getAttribute('init_start');
+		var initStartString = true;
+		if (!isUnWrappedVideo)
+			xml.getElementsByTagName("play_objects")[0].getElementsByTagName('auto')[0].getAttribute('init_start');
 
 		if (initStartString == 'yes') {
 			auto_rotate = true;
